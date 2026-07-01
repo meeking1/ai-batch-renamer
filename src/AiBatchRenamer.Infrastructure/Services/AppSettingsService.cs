@@ -64,6 +64,16 @@ namespace AiBatchRenamer.Infrastructure.Services
             }
         }
 
+        public void ClearDeepSeekApiKey()
+        {
+            var settings = Load();
+            Save(new AppSettings
+            {
+                DeepSeekModel = settings.DeepSeekModel,
+                DeepSeekApiKey = string.Empty
+            });
+        }
+
         private AppSettings LoadFromFile()
         {
             if (!File.Exists(settingsPath))

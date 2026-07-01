@@ -164,6 +164,55 @@ namespace AiBatchRenamer.App
             UpdateStatus("AI 设置已保存，API Key 已加密存储。");
         }
 
+        private async void TestDeepSeek_Click(object sender, RoutedEventArgs e)
+        {
+            if (!aiNamingService.IsConfigured)
+            {
+                UpdateStatus("请先保存 DeepSeek API Key，或设置 DEEPSEEK_API_KEY 环境变量。");
+                return;
+            }
+
+            UpdateStatus("正在测试 DeepSeek 连接...");
+            try
+            {
+                var result = await aiNamingService.GenerateAsync(new AiNamingRequest
+                {
+                    Instruction = "命名为“连接测试”",
+                    KeepExtension = true,
+                    Files = new List<AiNamingFile>
+                    {
+                        new AiNamingFile
+                        {
+                            Index = 1,
+                            Name = "sample.txt",
+                            Extension = ".txt"
+                        }
+                    }
+                });
+
+                var first = result.Items.FirstOrDefault();
+                if (first == null || string.IsNullOrWhiteSpace(first.NewBaseName))
+                {
+                    UpdateStatus("DeepSeek 连接成功，但返回内容为空。");
+                    return;
+                }
+
+                UpdateStatus("DeepSeek 连接成功。示例名称：" + first.NewBaseName);
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus(ex.Message);
+            }
+        }
+
+        private void ClearApiKey_Click(object sender, RoutedEventArgs e)
+        {
+            settingsService.ClearDeepSeekApiKey();
+            ApiKeyPasswordBox.Password = string.Empty;
+            LoadSettingsIntoUi();
+            UpdateStatus("已清除本机加密保存的 DeepSeek API Key。");
+        }
+
         private void Execute_Click(object sender, RoutedEventArgs e)
         {
             validationService.Validate(Items.Select(item => item.Model).ToList());

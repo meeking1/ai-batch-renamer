@@ -72,7 +72,9 @@
                         <TextBlock Text="DeepSeek 设置" FontWeight="SemiBold" />
                         <TextBox x:Name="ModelTextBox" Height="28" Text="deepseek-v4-flash" />
                         <PasswordBox x:Name="ApiKeyPasswordBox" Height="28" Margin="0,4,0,10" />
-                        <Button Content="保存 AI 设置" Click="SaveSettings_Click" Margin="0,0,0,12" />
+                        <Button Content="保存 AI 设置" Click="SaveSettings_Click" Margin="0,0,0,8" />
+                        <Button Content="测试 DeepSeek" Click="TestDeepSeek_Click" Margin="0,0,0,8" />
+                        <Button Content="清除本机 Key" Click="ClearApiKey_Click" Margin="0,0,0,12" />
                         <TextBlock x:Name="AiSettingsStatusTextBlock" Text="未配置 API Key 时使用本地规则" Foreground="#566070"
                                    TextWrapping="Wrap" Margin="0,0,0,12" />
                     </StackPanel>

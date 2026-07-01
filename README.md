@@ -110,6 +110,8 @@ API Key 不会写入代码仓库。程序支持两种配置方式：
 1. 在右侧“DeepSeek 设置”中输入 API Key 并保存，程序会使用 Windows DPAPI 按当前用户加密保存。
 2. 设置环境变量 `DEEPSEEK_API_KEY`，程序会优先读取环境变量。
 
+保存后可以点击“测试 DeepSeek”验证连接；如需删除本机保存的密钥，点击“清除本机 Key”。
+
 示例：
 
 ```text
