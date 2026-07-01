@@ -65,6 +65,12 @@ powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1
 src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.exe
 ```
 
+仓库也包含 GitHub Actions Windows 构建配置：
+
+```text
+.github\workflows\windows-build.yml
+```
+
 ## 使用
 
 1. 打开程序
