@@ -105,6 +105,8 @@ namespace AiBatchRenamer.Tests
                 var items = new List<RenameItem> { item };
                 new RenameValidationService().Validate(items);
 
+                TestAssert.Equal(RenameStatus.Ready, item.Status, "case-only rename remains executable");
+
                 var repository = new OperationLogRepository(Path.Combine(root, "logs"));
                 new RenameExecutionService(repository).Execute(items);
 

@@ -52,7 +52,7 @@ namespace AiBatchRenamer.Core.Services
                 return;
             }
 
-            if (NormalizePath(item.OriginalPath) == NormalizePath(item.ProposedPath))
+            if (string.Equals(item.OriginalPath, item.ProposedPath, StringComparison.Ordinal))
             {
                 Mark(item, RenameStatus.Unchanged, "未变化");
                 return;
