@@ -24,6 +24,19 @@ jobs:
       - name: Run tests
         run: src\AiBatchRenamer.Tests\bin\Release\AiBatchRenamer.Tests.exe
 
+      - name: Verify single exe app output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.exe")) {
+            throw "AiBatchRenamer.exe was not built."
+          }
+          if (Test-Path "src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.Core.dll") {
+            throw "App output still contains AiBatchRenamer.Core.dll."
+          }
+          if (Test-Path "src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.Infrastructure.dll") {
+            throw "App output still contains AiBatchRenamer.Infrastructure.dll."
+          }
+
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
 
@@ -31,7 +44,6 @@ jobs:
         shell: pwsh
         run: |
           iscc installer\AiBatchRenamer.iss
-          iscc installer\AiBatchRenamerPortable.iss
 
       - name: Upload app artifact
         uses: actions/upload-artifact@v4

@@ -48,6 +48,19 @@ jobs:
       - name: Run tests
         run: src\AiBatchRenamer.Tests\bin\Release\AiBatchRenamer.Tests.exe
 
+      - name: Verify single exe app output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.exe")) {
+            throw "AiBatchRenamer.exe was not built."
+          }
+          if (Test-Path "src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.Core.dll") {
+            throw "App output still contains AiBatchRenamer.Core.dll."
+          }
+          if (Test-Path "src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.Infrastructure.dll") {
+            throw "App output still contains AiBatchRenamer.Infrastructure.dll."
+          }
+
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
 
@@ -55,7 +68,6 @@ jobs:
         shell: pwsh
         run: |
           iscc installer\AiBatchRenamer.iss
-          iscc installer\AiBatchRenamerPortable.iss
 
       - name: Package release assets
         shell: pwsh
@@ -63,6 +75,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path dist | Out-Null
 
           Copy-Item "installer\output\*.exe" "dist\" -Force
+          Copy-Item "src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.exe" "dist\AiBatchRenamer-$env:RELEASE_VERSION.exe" -Force
 
           Get-ChildItem dist -File |
             ForEach-Object {
@@ -79,7 +92,7 @@ jobs:
 
           下载说明：
           - AiBatchRenamer-Setup-$env:RELEASE_VERSION.exe：Windows 安装包
-          - AiBatchRenamer-Portable-$env:RELEASE_VERSION.exe：单文件便携版
+          - AiBatchRenamer-$env:RELEASE_VERSION.exe：单文件版，双击直接运行
           - SHA256SUMS.txt：下载文件校验值
 
           系统要求：

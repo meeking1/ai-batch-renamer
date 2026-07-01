@@ -36,8 +36,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -61,19 +64,54 @@
     </Compile>
     <Compile Include="ViewModels\RenameItemViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\AiBatchRenamer.Core\Models\AiNamingModels.cs">
+      <Link>BundledCore\Models\AiNamingModels.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Core\Models\OperationLog.cs">
+      <Link>BundledCore\Models\OperationLog.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Core\Models\RenameItem.cs">
+      <Link>BundledCore\Models\RenameItem.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Core\Services\FileNameSanitizer.cs">
+      <Link>BundledCore\Services\FileNameSanitizer.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Core\Services\IAiNamingService.cs">
+      <Link>BundledCore\Services\IAiNamingService.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Core\Services\MultiNamePreviewService.cs">
+      <Link>BundledCore\Services\MultiNamePreviewService.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Core\Services\NaturalLanguagePreviewService.cs">
+      <Link>BundledCore\Services\NaturalLanguagePreviewService.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Core\Services\RenameValidationService.cs">
+      <Link>BundledCore\Services\RenameValidationService.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Core\Services\TemplatePreviewService.cs">
+      <Link>BundledCore\Services\TemplatePreviewService.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Infrastructure\Services\AppSettingsService.cs">
+      <Link>BundledInfrastructure\Services\AppSettingsService.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Infrastructure\Services\DeepSeekAiNamingService.cs">
+      <Link>BundledInfrastructure\Services\DeepSeekAiNamingService.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Infrastructure\Services\OperationLogRepository.cs">
+      <Link>BundledInfrastructure\Services\OperationLogRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Infrastructure\Services\PreviewCsvExporter.cs">
+      <Link>BundledInfrastructure\Services\PreviewCsvExporter.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Infrastructure\Services\RenameExecutionService.cs">
+      <Link>BundledInfrastructure\Services\RenameExecutionService.cs</Link>
+    </Compile>
+    <Compile Include="..\AiBatchRenamer.Infrastructure\Services\UndoService.cs">
+      <Link>BundledInfrastructure\Services\UndoService.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AiBatchRenamer.Core\AiBatchRenamer.Core.csproj">
-      <Project>{D85918E3-3D96-4AB6-A7F2-9E57C4A3A7EF}</Project>
-      <Name>AiBatchRenamer.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AiBatchRenamer.Infrastructure\AiBatchRenamer.Infrastructure.csproj">
-      <Project>{58F1E05D-13C2-4BC7-A1CE-66B1D38F2222}</Project>
-      <Name>AiBatchRenamer.Infrastructure</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
