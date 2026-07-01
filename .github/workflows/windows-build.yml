@@ -28,7 +28,10 @@ jobs:
         run: choco install innosetup --no-progress -y
 
       - name: Build installer
-        run: iscc installer\AiBatchRenamer.iss
+        shell: pwsh
+        run: |
+          iscc installer\AiBatchRenamer.iss
+          iscc installer\AiBatchRenamerPortable.iss
 
       - name: Upload app artifact
         uses: actions/upload-artifact@v4

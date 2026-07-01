@@ -1,7 +1,7 @@
 <Window x:Class="AiBatchRenamer.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AI 批量重命名 v0.1.3 by Dogdog" Height="680" Width="1080" MinHeight="560" MinWidth="920"
+        Title="AI 批量重命名 v0.1.4 by Dogdog" Height="680" Width="1080" MinHeight="560" MinWidth="920"
         AllowDrop="True" Drop="Window_Drop" DragOver="Window_DragOver"
         WindowStartupLocation="CenterScreen">
     <Grid Background="#F6F7F9">

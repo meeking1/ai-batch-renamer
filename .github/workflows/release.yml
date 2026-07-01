@@ -52,15 +52,15 @@ jobs:
         run: choco install innosetup --no-progress -y
 
       - name: Build installer
-        run: iscc installer\AiBatchRenamer.iss
+        shell: pwsh
+        run: |
+          iscc installer\AiBatchRenamer.iss
+          iscc installer\AiBatchRenamerPortable.iss
 
       - name: Package release assets
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-
-          $portable = "dist\AiBatchRenamer-$env:RELEASE_VERSION-portable.zip"
-          Compress-Archive -Path "src\AiBatchRenamer.App\bin\Release\*" -DestinationPath $portable -Force
 
           Copy-Item "installer\output\*.exe" "dist\" -Force
 
@@ -79,7 +79,7 @@ jobs:
 
           下载说明：
           - AiBatchRenamer-Setup-$env:RELEASE_VERSION.exe：Windows 安装包
-          - AiBatchRenamer-$env:RELEASE_VERSION-portable.zip：免安装便携版
+          - AiBatchRenamer-Portable-$env:RELEASE_VERSION.exe：单文件便携版
           - SHA256SUMS.txt：下载文件校验值
 
           系统要求：

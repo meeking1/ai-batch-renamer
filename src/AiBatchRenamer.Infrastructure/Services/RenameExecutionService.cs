@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using AiBatchRenamer.Core.Models;
 
 namespace AiBatchRenamer.Infrastructure.Services
@@ -62,7 +64,7 @@ namespace AiBatchRenamer.Infrastructure.Services
                 try
                 {
                     WriteDiagnostic("Direct move start: " + plan.Item.OriginalName + " -> " + plan.Item.ProposedName);
-                    File.Move(plan.Item.OriginalPath, plan.Item.ProposedPath);
+                    NativeMoveFile(plan.Item.OriginalPath, plan.Item.ProposedPath);
                     MarkSuccess(plan);
                     WriteDiagnostic("Direct move success: " + plan.Item.ProposedName);
                 }
@@ -82,7 +84,7 @@ namespace AiBatchRenamer.Infrastructure.Services
                 {
                     WriteDiagnostic("Stage move start: " + plan.Item.OriginalName);
                     plan.TempPath = CreateTempPath(plan.Item.OriginalPath);
-                    File.Move(plan.Item.OriginalPath, plan.TempPath);
+                    NativeMoveFile(plan.Item.OriginalPath, plan.TempPath);
                     plan.IsStaged = true;
                     WriteDiagnostic("Stage move success: " + plan.Item.OriginalName);
                 }
@@ -103,7 +105,7 @@ namespace AiBatchRenamer.Infrastructure.Services
                         throw new IOException("目标文件已存在");
                     }
 
-                    File.Move(plan.TempPath, plan.Item.ProposedPath);
+                    NativeMoveFile(plan.TempPath, plan.Item.ProposedPath);
                     MarkSuccess(plan);
                     WriteDiagnostic("Final move success: " + plan.Item.ProposedName);
                 }
@@ -150,7 +152,7 @@ namespace AiBatchRenamer.Infrastructure.Services
             {
                 if (File.Exists(plan.TempPath) && !File.Exists(plan.Item.OriginalPath))
                 {
-                    File.Move(plan.TempPath, plan.Item.OriginalPath);
+                    NativeMoveFile(plan.TempPath, plan.Item.OriginalPath);
                 }
             }
             catch
@@ -182,6 +184,39 @@ namespace AiBatchRenamer.Infrastructure.Services
         private static string NormalizePath(string path)
         {
             return (path ?? string.Empty).Trim().ToUpperInvariant();
+        }
+
+        private static void NativeMoveFile(string sourcePath, string destinationPath)
+        {
+            if (string.IsNullOrWhiteSpace(sourcePath))
+            {
+                throw new IOException("源路径为空");
+            }
+
+            if (string.IsNullOrWhiteSpace(destinationPath))
+            {
+                throw new IOException("目标路径为空");
+            }
+
+            if (!File.Exists(sourcePath))
+            {
+                throw new FileNotFoundException("源文件不存在", sourcePath);
+            }
+
+            if (File.Exists(destinationPath))
+            {
+                throw new IOException("目标文件已存在");
+            }
+
+            WriteDiagnostic("MoveFileExW call: " + Path.GetFileName(sourcePath) + " -> " + Path.GetFileName(destinationPath));
+            if (!MoveFileEx(sourcePath, destinationPath, MoveFileCopyAllowed | MoveFileWriteThrough))
+            {
+                var error = Marshal.GetLastWin32Error();
+                WriteDiagnostic("MoveFileExW failed. Error=" + error);
+                throw new Win32Exception(error);
+            }
+
+            WriteDiagnostic("MoveFileExW returned success.");
         }
 
         private static void WriteDiagnostic(string message)
@@ -218,5 +253,12 @@ namespace AiBatchRenamer.Infrastructure.Services
 
             public bool IsStaged { get; set; }
         }
+
+        private const int MoveFileCopyAllowed = 0x2;
+
+        private const int MoveFileWriteThrough = 0x8;
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool MoveFileEx(string existingFileName, string newFileName, int flags);
     }
 }
