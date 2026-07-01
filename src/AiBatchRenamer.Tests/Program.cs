@@ -13,6 +13,7 @@ namespace AiBatchRenamer.Tests
                 RenameCoreTests.MultiNamePreview_MarksMissingNamesInvalid,
                 RenameCoreTests.Validation_DetectsDuplicateProposedNames,
                 RenameCoreTests.Validation_RejectsReservedWindowsDeviceNames,
+                RenameCoreTests.Validation_MarksInvalidCharactersWithoutThrowing,
                 RenameCoreTests.NaturalLanguagePreview_ParsesReplaceInstruction,
                 RenameExecutionTests.ExecuteAndUndo_RenamesFilesAndRestoresOriginalNames,
                 RenameExecutionTests.ListRecent_ReturnsSavedOperationLogs,

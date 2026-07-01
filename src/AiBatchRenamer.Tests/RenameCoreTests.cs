@@ -58,6 +58,16 @@ namespace AiBatchRenamer.Tests
             TestAssert.Equal(RenameStatus.Invalid, items[1].Status, "LPT1 status");
         }
 
+        public static void Validation_MarksInvalidCharactersWithoutThrowing()
+        {
+            var items = CreateItems("a.txt");
+            items[0].ProposedBaseName = "bad\"name";
+
+            new RenameValidationService().Validate(items);
+
+            TestAssert.Equal(RenameStatus.Invalid, items[0].Status, "invalid character status");
+        }
+
         public static void NaturalLanguagePreview_ParsesReplaceInstruction()
         {
             var items = CreateItems("产品-草稿.txt");

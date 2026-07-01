@@ -39,7 +39,17 @@ namespace AiBatchRenamer.Core.Models
 
         public string ProposedPath
         {
-            get { return Path.Combine(DirectoryPath ?? string.Empty, ProposedName); }
+            get
+            {
+                if (string.IsNullOrWhiteSpace(DirectoryPath))
+                {
+                    return ProposedName;
+                }
+
+                return DirectoryPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) +
+                    Path.DirectorySeparatorChar +
+                    ProposedName;
+            }
         }
 
         public RenameStatus Status { get; set; }
