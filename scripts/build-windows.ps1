@@ -1,6 +1,7 @@
 param(
     [string]$Configuration = "Release",
-    [switch]$RunTests
+    [switch]$RunTests,
+    [switch]$BuildInstaller
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,6 +19,12 @@ if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
             }
             if ($RunTests) {
                 & (Join-Path $PSScriptRoot "..\src\AiBatchRenamer.Tests\bin\$Configuration\AiBatchRenamer.Tests.exe")
+                if ($LASTEXITCODE -ne 0) {
+                    exit $LASTEXITCODE
+                }
+            }
+            if ($BuildInstaller) {
+                & iscc (Join-Path $PSScriptRoot "..\installer\AiBatchRenamer.iss")
             }
             exit $LASTEXITCODE
         }
@@ -33,4 +40,11 @@ if ($LASTEXITCODE -ne 0) {
 
 if ($RunTests) {
     & (Join-Path $PSScriptRoot "..\src\AiBatchRenamer.Tests\bin\$Configuration\AiBatchRenamer.Tests.exe")
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+}
+
+if ($BuildInstaller) {
+    & iscc (Join-Path $PSScriptRoot "..\installer\AiBatchRenamer.iss")
 }

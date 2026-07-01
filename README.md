@@ -68,6 +68,12 @@ powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1
 powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1 -RunTests
 ```
 
+构建、测试并生成安装包，需要先安装 Inno Setup：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1 -RunTests -BuildInstaller
+```
+
 构建产物：
 
 ```text
@@ -80,7 +86,7 @@ src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.exe
 .github\workflows\windows-build.yml
 ```
 
-CI 会同时运行 `AiBatchRenamer.Tests.exe`，覆盖核心重命名规则、校验、执行和撤销。
+CI 会同时运行 `AiBatchRenamer.Tests.exe`，覆盖核心重命名规则、校验、执行和撤销，并生成 Inno Setup 安装包。
 
 ## 使用
 
