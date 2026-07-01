@@ -94,6 +94,8 @@ src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.exe
 
 CI 会同时运行 `AiBatchRenamer.Tests.exe`，覆盖核心重命名规则、校验、执行和撤销，并生成 Inno Setup 安装包。
 
+发布流程见 [docs/发布流程.md](docs/发布流程.md)。
+
 ## 使用
 
 1. 打开程序
