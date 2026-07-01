@@ -1,5 +1,5 @@
 #define MyAppName "AI Batch Renamer"
-#define MyAppVersion "0.1.4"
+#define MyAppVersion "0.1.5"
 #define MyAppExeName "AiBatchRenamer.exe"
 
 [Setup]

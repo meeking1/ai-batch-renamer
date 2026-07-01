@@ -381,19 +381,25 @@ namespace AiBatchRenamer.App
 
                 var blockedCount = Items.Count(item =>
                     item.Model.Status == RenameStatus.Invalid ||
-                    item.Model.Status == RenameStatus.Conflict ||
                     item.Model.Status == RenameStatus.Pending);
 
                 if (blockedCount > 0)
                 {
                     App.LogDiagnostic("Execute blocked: blockedCount=" + blockedCount);
-                    UpdateStatus("仍有无效、冲突或未预览的文件，不能执行。");
+                    UpdateStatus("仍有无效或未预览的文件，不能执行。冲突和未变化的文件会自动跳过。");
                     return;
                 }
 
+                var skippedCount = Items.Count(item =>
+                    item.Model.Status == RenameStatus.Conflict ||
+                    item.Model.Status == RenameStatus.Unchanged);
+
                 var confirm = MessageBox.Show(
                     this,
-                    string.Format("即将重命名 {0} 个文件。执行前请确认预览无误。", readyItems.Count),
+                    string.Format(
+                        "即将重命名 {0} 个文件，跳过 {1} 个冲突或未变化的文件。执行前请确认预览无误。",
+                        readyItems.Count,
+                        skippedCount),
                     "确认重命名",
                     MessageBoxButton.OKCancel,
                     MessageBoxImage.Warning);
@@ -417,7 +423,7 @@ namespace AiBatchRenamer.App
                 RefreshItems();
                 var successCount = log.Items.Count(item => item.Status == "success");
                 var failedCount = log.Items.Count(item => item.Status == "failed");
-                UpdateStatus(string.Format("重命名完成。成功：{0}，失败：{1}。", successCount, failedCount));
+                UpdateStatus(string.Format("重命名完成。成功：{0}，失败：{1}，跳过：{2}。", successCount, failedCount, skippedCount));
                 RefreshOperationHistory();
                 App.LogDiagnostic("Execute_Click completed. Success=" + successCount + ", Failed=" + failedCount);
             }

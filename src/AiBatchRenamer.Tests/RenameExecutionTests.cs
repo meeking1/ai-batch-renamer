@@ -190,6 +190,60 @@ namespace AiBatchRenamer.Tests
             }
         }
 
+        public static void Execute_SkipsConflictItemsAndRenamesReadyItems()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerConflictSkipTests-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+
+            try
+            {
+                var existingPath = Path.Combine(root, "E6108double.jpg");
+                var conflictPath = Path.Combine(root, "E6108双色.jpg");
+                var readyPath = Path.Combine(root, "E6214双色.jpg");
+                File.WriteAllText(existingPath, "existing");
+                File.WriteAllText(conflictPath, "conflict");
+                File.WriteAllText(readyPath, "ready");
+
+                var existing = new RenameItem(existingPath)
+                {
+                    Index = 1,
+                    ProposedBaseName = "E6108double"
+                };
+                var conflict = new RenameItem(conflictPath)
+                {
+                    Index = 2,
+                    ProposedBaseName = "E6108double"
+                };
+                var ready = new RenameItem(readyPath)
+                {
+                    Index = 3,
+                    ProposedBaseName = "E6214double"
+                };
+                var items = new List<RenameItem> { existing, conflict, ready };
+                new RenameValidationService().Validate(items);
+
+                TestAssert.Equal(RenameStatus.Unchanged, existing.Status, "existing unchanged status");
+                TestAssert.Equal(RenameStatus.Conflict, conflict.Status, "conflict status");
+                TestAssert.Equal(RenameStatus.Ready, ready.Status, "ready status");
+
+                var repository = new OperationLogRepository(Path.Combine(root, "logs"));
+                var log = new RenameExecutionService(repository).Execute(items);
+
+                TestAssert.Equal(1, log.Items.Count, "conflict skip log item count");
+                TestAssert.True(File.Exists(existingPath), "existing file remains");
+                TestAssert.True(File.Exists(conflictPath), "conflict file remains");
+                TestAssert.True(File.Exists(Path.Combine(root, "E6214double.jpg")), "ready file renamed");
+                TestAssert.Equal("ready", File.ReadAllText(Path.Combine(root, "E6214double.jpg")), "ready file content");
+            }
+            finally
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, true);
+                }
+            }
+        }
+
         public static void Undo_CaseOnlyRename_DoesNotTreatOriginalAsConflict()
         {
             var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerCaseUndoTests-" + Guid.NewGuid().ToString("N"));
