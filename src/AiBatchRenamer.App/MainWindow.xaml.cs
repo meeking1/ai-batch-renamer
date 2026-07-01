@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,11 +19,14 @@ namespace AiBatchRenamer.App
     {
         private readonly MultiNamePreviewService multiNamePreviewService;
         private readonly NaturalLanguagePreviewService naturalLanguagePreviewService;
+        private readonly TemplatePreviewService templatePreviewService;
         private readonly RenameValidationService validationService;
         private readonly RenameExecutionService executionService;
         private readonly UndoService undoService;
+        private readonly OperationLogRepository operationLogRepository;
         private readonly AppSettingsService settingsService;
         private readonly IAiNamingService aiNamingService;
+        private readonly PreviewCsvExporter previewCsvExporter;
 
         public MainWindow()
         {
@@ -30,14 +34,16 @@ namespace AiBatchRenamer.App
 
             multiNamePreviewService = new MultiNamePreviewService();
             naturalLanguagePreviewService = new NaturalLanguagePreviewService();
+            templatePreviewService = new TemplatePreviewService();
             validationService = new RenameValidationService();
+            previewCsvExporter = new PreviewCsvExporter();
 
             settingsService = new AppSettingsService();
             aiNamingService = new DeepSeekAiNamingService(settingsService);
 
-            var logRepository = new OperationLogRepository();
-            executionService = new RenameExecutionService(logRepository);
-            undoService = new UndoService(logRepository);
+            operationLogRepository = new OperationLogRepository();
+            executionService = new RenameExecutionService(operationLogRepository);
+            undoService = new UndoService(operationLogRepository);
 
             Items = new ObservableCollection<RenameItemViewModel>();
             DataContext = this;
@@ -102,6 +108,34 @@ namespace AiBatchRenamer.App
             MoveSelectedItems(1);
         }
 
+        private void ExportPreview_Click(object sender, RoutedEventArgs e)
+        {
+            if (Items.Count == 0)
+            {
+                UpdateStatus("没有可导出的文件。");
+                return;
+            }
+
+            var dialog = new SaveFileDialog
+            {
+                Title = "导出重命名预览",
+                Filter = "CSV 文件 (*.csv)|*.csv",
+                FileName = "rename-preview.csv"
+            };
+
+            if (dialog.ShowDialog(this) == true)
+            {
+                previewCsvExporter.Export(dialog.FileName, Items.Select(item => item.Model));
+                UpdateStatus("已导出预览：" + dialog.FileName);
+            }
+        }
+
+        private void OpenLogs_Click(object sender, RoutedEventArgs e)
+        {
+            Directory.CreateDirectory(operationLogRepository.LogDirectory);
+            Process.Start(operationLogRepository.LogDirectory);
+        }
+
         private void Clear_Click(object sender, RoutedEventArgs e)
         {
             Items.Clear();
@@ -133,6 +167,10 @@ namespace AiBatchRenamer.App
             else if (ModeComboBox.SelectedIndex == 2)
             {
                 ApplyFindReplacePreview(models, sanitize);
+            }
+            else if (ModeComboBox.SelectedIndex == 3)
+            {
+                templatePreviewService.ApplyTemplate(models, InstructionTextBox.Text, sanitize);
             }
             else
             {

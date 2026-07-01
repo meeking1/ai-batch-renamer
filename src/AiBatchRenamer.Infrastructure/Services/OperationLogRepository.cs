@@ -23,6 +23,11 @@ namespace AiBatchRenamer.Infrastructure.Services
             this.logDirectory = logDirectory;
         }
 
+        public string LogDirectory
+        {
+            get { return logDirectory; }
+        }
+
         public string Save(OperationLog log)
         {
             Directory.CreateDirectory(logDirectory);

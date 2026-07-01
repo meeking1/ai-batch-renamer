@@ -57,6 +57,21 @@ namespace AiBatchRenamer.Tests
             TestAssert.Equal(RenameStatus.Ready, items[0].Status, "replace status");
         }
 
+        public static void TemplatePreview_RendersNameFolderAndPaddedIndex()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerTemplateTests-" + Guid.NewGuid().ToString("N"));
+            var item = new RenameItem(Path.Combine(root, "folder-a", "合同.txt"))
+            {
+                Index = 1,
+                Status = RenameStatus.Pending
+            };
+            var items = new List<RenameItem> { item };
+
+            new TemplatePreviewService().ApplyTemplate(items, "{folder}-{name}-{index:000}", true);
+
+            TestAssert.Equal("folder-a-合同-001.txt", items[0].ProposedName, "template proposed name");
+        }
+
         private static List<RenameItem> CreateItems(params string[] names)
         {
             var items = new List<RenameItem>();

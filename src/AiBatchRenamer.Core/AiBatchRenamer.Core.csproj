@@ -40,6 +40,7 @@
     <Compile Include="Services\FileNameSanitizer.cs" />
     <Compile Include="Services\MultiNamePreviewService.cs" />
     <Compile Include="Services\NaturalLanguagePreviewService.cs" />
+    <Compile Include="Services\TemplatePreviewService.cs" />
     <Compile Include="Services\RenameValidationService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

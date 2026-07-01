@@ -17,7 +17,9 @@ namespace AiBatchRenamer.Tests
                 DeepSeekAiNamingServiceTests.ParseNamingResult_ReturnsItems_WhenJsonIsValid,
                 DeepSeekAiNamingServiceTests.ParseNamingResult_RejectsDuplicateIndexes,
                 DeepSeekAiNamingServiceTests.ParseNamingResult_RejectsEmptyNames,
-                AppSettingsServiceTests.SaveLoadAndClear_PreservesModelAndRemovesKey
+                AppSettingsServiceTests.SaveLoadAndClear_PreservesModelAndRemovesKey,
+                RenameCoreTests.TemplatePreview_RendersNameFolderAndPaddedIndex,
+                PreviewCsvExporterTests.Export_WritesEscapedCsvRows
             };
 
             var passed = 0;

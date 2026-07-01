@@ -44,6 +44,7 @@
     <Compile Include="Services\UndoService.cs" />
     <Compile Include="Services\AppSettingsService.cs" />
     <Compile Include="Services\DeepSeekAiNamingService.cs" />
+    <Compile Include="Services\PreviewCsvExporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
