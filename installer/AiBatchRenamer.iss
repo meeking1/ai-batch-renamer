@@ -16,7 +16,6 @@ OutputBaseFilename=AiBatchRenamer-Setup-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "chinesesimp"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
@@ -33,3 +32,30 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+function IsDotNet48Installed(): Boolean;
+var
+  Release: Cardinal;
+begin
+  Result := RegQueryDWordValue(
+    HKLM,
+    'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full',
+    'Release',
+    Release
+  ) and (Release >= 528040);
+end;
+
+function InitializeSetup(): Boolean;
+begin
+  Result := True;
+  if not IsDotNet48Installed() then
+  begin
+    MsgBox(
+      '.NET Framework 4.8 is required. Please install .NET Framework 4.8 and run this installer again.',
+      mbError,
+      MB_OK
+    );
+    Result := False;
+  end;
+end;

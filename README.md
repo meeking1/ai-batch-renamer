@@ -30,7 +30,7 @@
 - .NET Framework 4.8
 - 无第三方 NuGet 依赖
 
-选择 .NET Framework 4.8 是为了兼容 Windows 7 SP1、Windows 10 和 Windows 11。Windows 7 机器需要先安装 .NET Framework 4.8 运行时。
+选择 .NET Framework 4.8 是为了兼容 Windows 7 SP1、Windows 10 和 Windows 11。Windows 7 机器需要先安装 .NET Framework 4.8 运行时。安装包会在安装前检查 .NET Framework 4.8，缺失时会提示用户先安装运行时。
 
 ## 项目结构
 
@@ -53,6 +53,7 @@
 - Windows 10 或 Windows 11
 - Visual Studio 2022
 - .NET Framework 4.8 Developer Pack
+- 打包安装包需要 Inno Setup
 
 命令行构建：
 
