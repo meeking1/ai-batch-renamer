@@ -10,6 +10,8 @@ namespace AiBatchRenamer.Tests
         {
             var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerSettingsTests-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(root);
+            var previousApiKey = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+            Environment.SetEnvironmentVariable("DEEPSEEK_API_KEY", null);
 
             try
             {
@@ -34,6 +36,8 @@ namespace AiBatchRenamer.Tests
             }
             finally
             {
+                Environment.SetEnvironmentVariable("DEEPSEEK_API_KEY", previousApiKey);
+
                 if (Directory.Exists(root))
                 {
                     Directory.Delete(root, true);
