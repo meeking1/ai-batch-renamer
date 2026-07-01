@@ -61,51 +61,51 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0">
-                        <TextBlock Text="重命名模式" FontWeight="SemiBold" />
-                        <ComboBox x:Name="ModeComboBox" SelectedIndex="0">
-                            <ComboBoxItem Content="自然语言规则" />
-                            <ComboBoxItem Content="多名称逐行替换" />
-                            <ComboBoxItem Content="查找替换" />
-                            <ComboBoxItem Content="模板命名" />
-                        </ComboBox>
+                        <StackPanel Grid.Row="0">
+                            <TextBlock Text="重命名模式" FontWeight="SemiBold" />
+                            <ComboBox x:Name="ModeComboBox" SelectedIndex="0">
+                                <ComboBoxItem Content="自然语言规则" />
+                                <ComboBoxItem Content="多名称逐行替换" />
+                                <ComboBoxItem Content="查找替换" />
+                                <ComboBoxItem Content="模板命名" />
+                            </ComboBox>
 
-                        <CheckBox x:Name="SanitizeCheckBox" Content="自动替换非法字符" IsChecked="True" Margin="0,0,0,12" />
-                        <CheckBox x:Name="RecursiveFolderCheckBox" Content="添加文件夹时包含子文件夹" IsChecked="False" Margin="0,0,0,12" />
+                            <CheckBox x:Name="SanitizeCheckBox" Content="自动替换非法字符" IsChecked="True" Margin="0,0,0,12" />
+                            <CheckBox x:Name="RecursiveFolderCheckBox" Content="添加文件夹时包含子文件夹" IsChecked="False" Margin="0,0,0,12" />
 
-                        <TextBlock Text="排序方式" FontWeight="SemiBold" />
-                        <ComboBox x:Name="SortComboBox" SelectedIndex="0">
-                            <ComboBoxItem Content="文件名 A-Z" />
-                            <ComboBoxItem Content="文件名 Z-A" />
-                            <ComboBoxItem Content="修改时间 旧-新" />
-                            <ComboBoxItem Content="修改时间 新-旧" />
-                            <ComboBoxItem Content="文件大小 小-大" />
-                            <ComboBoxItem Content="文件大小 大-小" />
-                        </ComboBox>
-                        <Button Content="应用排序" Click="ApplySort_Click" Margin="0,0,0,12" />
+                            <TextBlock Text="排序方式" FontWeight="SemiBold" />
+                            <ComboBox x:Name="SortComboBox" SelectedIndex="0">
+                                <ComboBoxItem Content="文件名 A-Z" />
+                                <ComboBoxItem Content="文件名 Z-A" />
+                                <ComboBoxItem Content="修改时间 旧-新" />
+                                <ComboBoxItem Content="修改时间 新-旧" />
+                                <ComboBoxItem Content="文件大小 小-大" />
+                                <ComboBoxItem Content="文件大小 大-小" />
+                            </ComboBox>
+                            <Button Content="应用排序" Click="ApplySort_Click" Margin="0,0,0,12" />
 
-                        <TextBlock Text="DeepSeek 设置" FontWeight="SemiBold" />
-                        <TextBox x:Name="ModelTextBox" Height="28" Text="deepseek-v4-flash" />
-                        <PasswordBox x:Name="ApiKeyPasswordBox" Height="28" Margin="0,4,0,10" />
-                        <Button Content="保存 AI 设置" Click="SaveSettings_Click" Margin="0,0,0,8" />
-                        <Button Content="测试 DeepSeek" Click="TestDeepSeek_Click" Margin="0,0,0,8" />
-                        <Button Content="清除本机 Key" Click="ClearApiKey_Click" Margin="0,0,0,12" />
-                        <TextBlock x:Name="AiSettingsStatusTextBlock" Text="未配置 API Key 时使用本地规则" Foreground="#566070"
-                                   TextWrapping="Wrap" Margin="0,0,0,12" />
-                    </StackPanel>
+                            <TextBlock Text="DeepSeek 设置" FontWeight="SemiBold" />
+                            <TextBox x:Name="ModelTextBox" Height="28" Text="deepseek-v4-flash" />
+                            <PasswordBox x:Name="ApiKeyPasswordBox" Height="28" Margin="0,4,0,10" />
+                            <Button Content="保存 AI 设置" Click="SaveSettings_Click" Margin="0,0,0,8" />
+                            <Button Content="测试 DeepSeek" Click="TestDeepSeek_Click" Margin="0,0,0,8" />
+                            <Button Content="清除本机 Key" Click="ClearApiKey_Click" Margin="0,0,0,12" />
+                            <TextBlock x:Name="AiSettingsStatusTextBlock" Text="未配置 API Key 时使用本地规则" Foreground="#566070"
+                                       TextWrapping="Wrap" Margin="0,0,0,12" />
+                        </StackPanel>
 
-                    <StackPanel Grid.Row="1">
-                        <TextBlock Text="查找替换" FontWeight="SemiBold" />
-                        <TextBox x:Name="FindTextBox" Height="28" ToolTip="查找替换模式下使用" />
-                        <TextBox x:Name="ReplaceTextBox" Height="28" ToolTip="查找替换模式下使用" />
-                    </StackPanel>
+                        <StackPanel Grid.Row="1">
+                            <TextBlock Text="查找替换" FontWeight="SemiBold" />
+                            <TextBox x:Name="FindTextBox" Height="28" ToolTip="查找替换模式下使用" />
+                            <TextBox x:Name="ReplaceTextBox" Height="28" ToolTip="查找替换模式下使用" />
+                        </StackPanel>
 
-                    <StackPanel Grid.Row="2">
-                        <TextBlock Text="命名要求 / 名称列表" FontWeight="SemiBold" />
-                        <TextBox x:Name="InstructionTextBox" AcceptsReturn="True" TextWrapping="Wrap"
-                                 VerticalScrollBarVisibility="Auto" MinHeight="220"
-                                 Text="例如：命名为“项目资料”&#x0a;&#x0a;多名称模式下每行一个新名称&#x0a;&#x0a;模板模式示例：{name}-{index:000}" />
-                    </StackPanel>
+                        <StackPanel Grid.Row="2">
+                            <TextBlock Text="命名要求 / 名称列表" FontWeight="SemiBold" />
+                            <TextBox x:Name="InstructionTextBox" AcceptsReturn="True" TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto" MinHeight="220"
+                                     Text="例如：命名为“项目资料”&#x0a;&#x0a;多名称模式下每行一个新名称&#x0a;&#x0a;模板模式示例：{name}-{index:000}" />
+                        </StackPanel>
 
                         <StackPanel Grid.Row="3">
                             <Button Content="生成预览" Click="Preview_Click" Margin="0,0,0,8" />

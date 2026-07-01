@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using AiBatchRenamer.Core.Models;
@@ -62,6 +64,36 @@ namespace AiBatchRenamer.Infrastructure.Services
             {
                 return serializer.ReadObject(stream) as OperationLog;
             }
+        }
+
+        public IList<OperationLog> ListRecent(int limit)
+        {
+            Directory.CreateDirectory(logDirectory);
+            var serializer = new DataContractJsonSerializer(typeof(OperationLog));
+            var logs = new List<OperationLog>();
+
+            foreach (var filePath in Directory.GetFiles(logDirectory, "*.json")
+                .OrderByDescending(File.GetLastWriteTime)
+                .Take(Math.Max(0, limit)))
+            {
+                try
+                {
+                    using (var stream = File.OpenRead(filePath))
+                    {
+                        var log = serializer.ReadObject(stream) as OperationLog;
+                        if (log != null)
+                        {
+                            logs.Add(log);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore corrupt log files so one bad entry does not break history.
+                }
+            }
+
+            return logs;
         }
 
         public void ClearLatestPointer()

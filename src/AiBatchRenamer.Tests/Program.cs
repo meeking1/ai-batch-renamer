@@ -15,6 +15,7 @@ namespace AiBatchRenamer.Tests
                 RenameCoreTests.Validation_RejectsReservedWindowsDeviceNames,
                 RenameCoreTests.NaturalLanguagePreview_ParsesReplaceInstruction,
                 RenameExecutionTests.ExecuteAndUndo_RenamesFilesAndRestoresOriginalNames,
+                RenameExecutionTests.ListRecent_ReturnsSavedOperationLogs,
                 DeepSeekAiNamingServiceTests.ParseNamingResult_ReturnsItems_WhenJsonIsValid,
                 DeepSeekAiNamingServiceTests.ParseNamingResult_RejectsDuplicateIndexes,
                 DeepSeekAiNamingServiceTests.ParseNamingResult_RejectsEmptyNames,

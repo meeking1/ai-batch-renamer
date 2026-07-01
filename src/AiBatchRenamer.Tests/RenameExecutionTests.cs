@@ -53,5 +53,38 @@ namespace AiBatchRenamer.Tests
                 }
             }
         }
+
+        public static void ListRecent_ReturnsSavedOperationLogs()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerLogTests-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+
+            try
+            {
+                var repository = new OperationLogRepository(root);
+                repository.Save(new OperationLog
+                {
+                    OperationId = "20260701-000000-001",
+                    CreatedAt = DateTimeOffset.Now.ToString("o")
+                });
+                repository.Save(new OperationLog
+                {
+                    OperationId = "20260701-000000-002",
+                    CreatedAt = DateTimeOffset.Now.ToString("o")
+                });
+
+                var logs = repository.ListRecent(10);
+
+                TestAssert.Equal(2, logs.Count, "recent log count");
+                TestAssert.True(logs[0].OperationId.Length > 0, "recent log has id");
+            }
+            finally
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, true);
+                }
+            }
+        }
     }
 }
