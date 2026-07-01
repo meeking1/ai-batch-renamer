@@ -1,0 +1,104 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag, for example v0.1.0"
+        required: true
+        default: "v0.1.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve release version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "push") {
+            $tag = "${{ github.ref_name }}"
+          } else {
+            $tag = "${{ inputs.version }}"
+          }
+
+          if (-not $tag.StartsWith("v")) {
+            throw "Release tag must start with v, for example v0.1.0"
+          }
+
+          $version = $tag.Substring(1)
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "RELEASE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build
+        run: msbuild AiBatchRenamer.sln /p:Configuration=Release /p:Platform="Any CPU"
+
+      - name: Run tests
+        run: src\AiBatchRenamer.Tests\bin\Release\AiBatchRenamer.Tests.exe
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        run: iscc installer\AiBatchRenamer.iss
+
+      - name: Package release assets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+
+          $portable = "dist\AiBatchRenamer-$env:RELEASE_VERSION-portable.zip"
+          Compress-Archive -Path "src\AiBatchRenamer.App\bin\Release\*" -DestinationPath $portable -Force
+
+          Copy-Item "installer\output\*.exe" "dist\" -Force
+
+          Get-ChildItem dist -File |
+            ForEach-Object {
+              $hash = Get-FileHash $_.FullName -Algorithm SHA256
+              "$($hash.Hash)  $($_.Name)"
+            } |
+            Set-Content "dist\SHA256SUMS.txt"
+
+      - name: Write release notes
+        shell: pwsh
+        run: |
+          @"
+          AI Batch Renamer $env:RELEASE_TAG
+
+          下载说明：
+          - AiBatchRenamer-Setup-$env:RELEASE_VERSION.exe：Windows 安装包
+          - AiBatchRenamer-$env:RELEASE_VERSION-portable.zip：免安装便携版
+          - SHA256SUMS.txt：下载文件校验值
+
+          系统要求：
+          - Windows 7 SP1、Windows 10 或 Windows 11
+          - .NET Framework 4.8
+          "@ | Set-Content release-notes.md
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG dist\* --clobber
+          } else {
+            gh release create $env:RELEASE_TAG dist\* `
+              --target $env:GITHUB_SHA `
+              --title "AI Batch Renamer $env:RELEASE_TAG" `
+              --notes-file release-notes.md `
+              --latest
+          }
