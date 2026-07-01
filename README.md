@@ -1,5 +1,7 @@
 # AI Batch Renamer
 
+[![Windows Build](https://github.com/meeking1/ai-batch-renamer/actions/workflows/windows-build.yml/badge.svg)](https://github.com/meeking1/ai-batch-renamer/actions/workflows/windows-build.yml)
+
 一款面向 Windows 7 SP1、Windows 10、Windows 11 的批量文件重命名桌面程序。
 
 当前版本是 MVP 原型，已实现：
@@ -94,6 +96,10 @@ src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.exe
 ```
 
 CI 会同时运行 `AiBatchRenamer.Tests.exe`，覆盖核心重命名规则、校验、执行和撤销，并生成 Inno Setup 安装包。
+在 GitHub Actions 的 `Windows Build` 运行详情中，可以下载：
+
+- `AiBatchRenamer-Release`：Release 目录
+- `AiBatchRenamer-Setup`：安装包
 
 发布流程见 [docs/发布流程.md](docs/发布流程.md)。
 
