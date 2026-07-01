@@ -169,7 +169,7 @@ namespace AiBatchRenamer.Infrastructure.Services
             }
         }
 
-        private static AiNamingResult ParseNamingResult(string content, int expectedCount)
+        public static AiNamingResult ParseNamingResult(string content, int expectedCount)
         {
             var json = ExtractJson(content);
             var result = Deserialize<AiNamingResultDto>(json);
@@ -181,6 +181,25 @@ namespace AiBatchRenamer.Infrastructure.Services
             if (result.Items.Count != expectedCount)
             {
                 throw new InvalidOperationException("DeepSeek 返回数量与文件数量不一致");
+            }
+
+            var seenIndexes = new HashSet<int>();
+            foreach (var item in result.Items)
+            {
+                if (item.Index < 1 || item.Index > expectedCount)
+                {
+                    throw new InvalidOperationException("DeepSeek 返回了不存在的文件序号");
+                }
+
+                if (!seenIndexes.Add(item.Index))
+                {
+                    throw new InvalidOperationException("DeepSeek 返回了重复的文件序号");
+                }
+
+                if (string.IsNullOrWhiteSpace(item.NewBaseName))
+                {
+                    throw new InvalidOperationException("DeepSeek 返回了空文件名");
+                }
             }
 
             return new AiNamingResult

@@ -13,7 +13,10 @@ namespace AiBatchRenamer.Tests
                 RenameCoreTests.MultiNamePreview_MarksMissingNamesInvalid,
                 RenameCoreTests.Validation_DetectsDuplicateProposedNames,
                 RenameCoreTests.NaturalLanguagePreview_ParsesReplaceInstruction,
-                RenameExecutionTests.ExecuteAndUndo_RenamesFilesAndRestoresOriginalNames
+                RenameExecutionTests.ExecuteAndUndo_RenamesFilesAndRestoresOriginalNames,
+                DeepSeekAiNamingServiceTests.ParseNamingResult_ReturnsItems_WhenJsonIsValid,
+                DeepSeekAiNamingServiceTests.ParseNamingResult_RejectsDuplicateIndexes,
+                DeepSeekAiNamingServiceTests.ParseNamingResult_RejectsEmptyNames
             };
 
             var passed = 0;

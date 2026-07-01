@@ -45,6 +45,7 @@
     <Compile Include="TestAssert.cs" />
     <Compile Include="RenameCoreTests.cs" />
     <Compile Include="RenameExecutionTests.cs" />
+    <Compile Include="DeepSeekAiNamingServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
