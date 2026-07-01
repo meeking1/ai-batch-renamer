@@ -19,6 +19,8 @@
                     <Button Content="移除选中" Click="RemoveSelected_Click" />
                     <Button Content="上移" Click="MoveSelectedUp_Click" />
                     <Button Content="下移" Click="MoveSelectedDown_Click" />
+                    <Button Content="定位文件" Click="RevealSelected_Click" />
+                    <Button Content="复制预览" Click="CopyPreview_Click" />
                     <Button Content="导出预览" Click="ExportPreview_Click" />
                     <Button Content="打开日志" Click="OpenLogs_Click" />
                     <Button Content="清空" Click="Clear_Click" />

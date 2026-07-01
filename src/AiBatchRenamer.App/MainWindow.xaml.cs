@@ -128,6 +128,55 @@ namespace AiBatchRenamer.App
             UpdateStatus("已应用排序。");
         }
 
+        private void RevealSelected_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = FilesGrid.SelectedItems
+                .OfType<RenameItemViewModel>()
+                .FirstOrDefault();
+
+            if (selected == null)
+            {
+                UpdateStatus("请先选择一个文件。");
+                return;
+            }
+
+            var path = selected.Model.OriginalPath;
+            if (!File.Exists(path))
+            {
+                UpdateStatus("选中文件不存在，无法定位。");
+                return;
+            }
+
+            Process.Start("explorer.exe", "/select,\"" + path + "\"");
+        }
+
+        private void CopyPreview_Click(object sender, RoutedEventArgs e)
+        {
+            if (Items.Count == 0)
+            {
+                UpdateStatus("没有可复制的预览。");
+                return;
+            }
+
+            validationService.Validate(Items.Select(item => item.Model).ToList());
+            RefreshItems();
+
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("序号\t原文件名\t新文件名\t状态\t说明");
+            foreach (var item in Items)
+            {
+                builder.Append(item.Index).Append('\t')
+                    .Append(item.OriginalName).Append('\t')
+                    .Append(item.ProposedName).Append('\t')
+                    .Append(item.Status).Append('\t')
+                    .Append(item.Message)
+                    .AppendLine();
+            }
+
+            Clipboard.SetText(builder.ToString());
+            UpdateStatus("已复制预览到剪贴板。");
+        }
+
         private void ExportPreview_Click(object sender, RoutedEventArgs e)
         {
             if (Items.Count == 0)
