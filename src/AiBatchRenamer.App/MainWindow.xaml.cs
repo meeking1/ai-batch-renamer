@@ -48,6 +48,7 @@ namespace AiBatchRenamer.App
             Items = new ObservableCollection<RenameItemViewModel>();
             DataContext = this;
             LoadSettingsIntoUi();
+            RefreshOperationHistory();
         }
 
         public ObservableCollection<RenameItemViewModel> Items { get; private set; }
@@ -169,6 +170,40 @@ namespace AiBatchRenamer.App
             var result = undoService.UndoLatest();
             UpdateStatus(string.Format("{0} 成功：{1}，失败：{2}", result.Message, result.SuccessCount, result.FailedCount));
             MessageBox.Show(this, MainWindowStatus.Text, "撤销结果", MessageBoxButton.OK, MessageBoxImage.Information);
+            RefreshOperationHistory();
+        }
+
+        private void RefreshHistory_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshOperationHistory();
+            UpdateStatus("已刷新操作历史。");
+        }
+
+        private void UndoSelectedHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var option = OperationHistoryComboBox.SelectedItem as OperationHistoryOption;
+            if (option == null)
+            {
+                UpdateStatus("请先选择一条操作历史。");
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                this,
+                "将尝试撤销选中的历史操作。若原路径已被占用或文件已移动，部分项可能失败。",
+                "撤销选中历史",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.OK)
+            {
+                return;
+            }
+
+            var result = undoService.Undo(option.Log, false);
+            UpdateStatus(string.Format("{0} 成功：{1}，失败：{2}", result.Message, result.SuccessCount, result.FailedCount));
+            MessageBox.Show(this, MainWindowStatus.Text, "撤销结果", MessageBoxButton.OK, MessageBoxImage.Information);
+            RefreshOperationHistory();
         }
 
         private async void Preview_Click(object sender, RoutedEventArgs e)
@@ -319,6 +354,7 @@ namespace AiBatchRenamer.App
             var successCount = log.Items.Count(item => item.Status == "success");
             var failedCount = log.Items.Count(item => item.Status == "failed");
             UpdateStatus(string.Format("重命名完成。成功：{0}，失败：{1}。", successCount, failedCount));
+            RefreshOperationHistory();
         }
 
         private void Window_DragOver(object sender, DragEventArgs e)
@@ -650,6 +686,19 @@ namespace AiBatchRenamer.App
             }
         }
 
+        private void RefreshOperationHistory()
+        {
+            var options = operationLogRepository.ListRecent(20)
+                .Select(log => new OperationHistoryOption(log))
+                .ToList();
+
+            OperationHistoryComboBox.ItemsSource = options;
+            if (options.Count > 0)
+            {
+                OperationHistoryComboBox.SelectedIndex = 0;
+            }
+        }
+
         private void RefreshItems()
         {
             foreach (var item in Items)
@@ -684,6 +733,27 @@ namespace AiBatchRenamer.App
         private void UpdateStatus(string message)
         {
             MainWindowStatus.Text = message;
+        }
+
+        private class OperationHistoryOption
+        {
+            public OperationHistoryOption(OperationLog log)
+            {
+                Log = log;
+            }
+
+            public OperationLog Log { get; private set; }
+
+            public string DisplayText
+            {
+                get
+                {
+                    return string.Format(
+                        "{0} ({1} 项)",
+                        string.IsNullOrWhiteSpace(Log.OperationId) ? "未知操作" : Log.OperationId,
+                        Log.Items == null ? 0 : Log.Items.Count);
+                }
+            }
         }
     }
 }

@@ -86,5 +86,41 @@ namespace AiBatchRenamer.Tests
                 }
             }
         }
+
+        public static void UndoSpecificLog_DoesNotClearLatestPointer()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerSpecificUndoTests-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+
+            try
+            {
+                var originalPath = Path.Combine(root, "specific.txt");
+                File.WriteAllText(originalPath, "content");
+
+                var item = new RenameItem(originalPath)
+                {
+                    Index = 1,
+                    ProposedBaseName = "specific-renamed"
+                };
+                var items = new List<RenameItem> { item };
+                new RenameValidationService().Validate(items);
+
+                var repository = new OperationLogRepository(Path.Combine(root, "logs"));
+                var log = new RenameExecutionService(repository).Execute(items);
+
+                var result = new UndoService(repository).Undo(log, false);
+
+                TestAssert.Equal(1, result.SuccessCount, "specific undo success count");
+                TestAssert.True(repository.LoadLatest() != null, "specific undo keeps latest pointer");
+                TestAssert.True(File.Exists(originalPath), "specific undo restores file");
+            }
+            finally
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, true);
+                }
+            }
+        }
     }
 }

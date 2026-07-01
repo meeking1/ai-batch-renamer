@@ -82,9 +82,14 @@
                                 <ComboBoxItem Content="文件大小 小-大" />
                                 <ComboBoxItem Content="文件大小 大-小" />
                             </ComboBox>
-                            <Button Content="应用排序" Click="ApplySort_Click" Margin="0,0,0,12" />
+                        <Button Content="应用排序" Click="ApplySort_Click" Margin="0,0,0,12" />
 
-                            <TextBlock Text="DeepSeek 设置" FontWeight="SemiBold" />
+                        <TextBlock Text="操作历史" FontWeight="SemiBold" />
+                        <ComboBox x:Name="OperationHistoryComboBox" DisplayMemberPath="DisplayText" Margin="0,4,0,10" />
+                        <Button Content="刷新历史" Click="RefreshHistory_Click" Margin="0,0,0,8" />
+                        <Button Content="撤销选中历史" Click="UndoSelectedHistory_Click" Margin="0,0,0,12" />
+
+                        <TextBlock Text="DeepSeek 设置" FontWeight="SemiBold" />
                             <TextBox x:Name="ModelTextBox" Height="28" Text="deepseek-v4-flash" />
                             <PasswordBox x:Name="ApiKeyPasswordBox" Height="28" Margin="0,4,0,10" />
                             <Button Content="保存 AI 设置" Click="SaveSettings_Click" Margin="0,0,0,8" />

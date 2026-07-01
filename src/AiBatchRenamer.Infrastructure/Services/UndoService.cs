@@ -21,6 +21,16 @@ namespace AiBatchRenamer.Infrastructure.Services
                 return new UndoResult(false, 0, 0, "没有可撤销的操作");
             }
 
+            return Undo(log, true);
+        }
+
+        public UndoResult Undo(OperationLog log, bool clearLatestPointer)
+        {
+            if (log == null)
+            {
+                return new UndoResult(false, 0, 0, "没有可撤销的操作");
+            }
+
             var success = 0;
             var failed = 0;
 
@@ -55,7 +65,7 @@ namespace AiBatchRenamer.Infrastructure.Services
                 }
             }
 
-            if (failed == 0)
+            if (failed == 0 && clearLatestPointer)
             {
                 logRepository.ClearLatestPointer();
             }
