@@ -98,6 +98,11 @@ namespace AiBatchRenamer.Core.Services
                 .Trim()
                 .TrimEnd('.', ' ')
                 .ToUpperInvariant();
+            var dotIndex = normalized.IndexOf('.');
+            if (dotIndex >= 0)
+            {
+                normalized = normalized.Substring(0, dotIndex);
+            }
 
             if (normalized == "CON" ||
                 normalized == "PRN" ||

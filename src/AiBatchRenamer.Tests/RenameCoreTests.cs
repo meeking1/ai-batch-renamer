@@ -49,7 +49,7 @@ namespace AiBatchRenamer.Tests
         public static void Validation_RejectsReservedWindowsDeviceNames()
         {
             var items = CreateItems("a.txt", "b.txt");
-            items[0].ProposedBaseName = "CON";
+            items[0].ProposedBaseName = "CON.txt";
             items[1].ProposedBaseName = "LPT1";
 
             new RenameValidationService().Validate(items);
