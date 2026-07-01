@@ -116,6 +116,9 @@ namespace AiBatchRenamer.App
                 return;
             }
 
+            validationService.Validate(Items.Select(item => item.Model).ToList());
+            RefreshItems();
+
             var dialog = new SaveFileDialog
             {
                 Title = "导出重命名预览",

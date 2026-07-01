@@ -19,7 +19,7 @@ namespace AiBatchRenamer.Infrastructure.Services
         {
             var log = new OperationLog
             {
-                OperationId = DateTime.Now.ToString("yyyyMMdd-HHmmss"),
+                OperationId = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff"),
                 CreatedAt = DateTimeOffset.Now.ToString("o")
             };
 
