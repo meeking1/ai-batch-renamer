@@ -15,6 +15,7 @@ namespace AiBatchRenamer.Infrastructure.Services
     public class DeepSeekAiNamingService : IAiNamingService
     {
         private const string Endpoint = "https://api.deepseek.com/chat/completions";
+        private const int MaxAttempts = 3;
         private readonly AppSettingsService settingsService;
 
         public DeepSeekAiNamingService(AppSettingsService settingsService)
@@ -43,7 +44,7 @@ namespace AiBatchRenamer.Infrastructure.Services
 
             var chatRequest = CreateChatCompletionRequest(request, settings.DeepSeekModel);
             var requestJson = Serialize(chatRequest);
-            var responseJson = await PostJsonAsync(requestJson, settings.DeepSeekApiKey);
+            var responseJson = await PostJsonWithRetriesAsync(requestJson, settings.DeepSeekApiKey);
             var response = Deserialize<ChatCompletionResponse>(responseJson);
 
             if (response == null || response.Choices == null || response.Choices.Count == 0)
@@ -122,7 +123,32 @@ namespace AiBatchRenamer.Infrastructure.Services
                 .Replace("\"", "\\\"");
         }
 
-        private async Task<string> PostJsonAsync(string requestJson, string apiKey)
+        private async Task<string> PostJsonWithRetriesAsync(string requestJson, string apiKey)
+        {
+            WebException lastWebException = null;
+            for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+            {
+                try
+                {
+                    return await PostJsonOnceAsync(requestJson, apiKey);
+                }
+                catch (WebException ex)
+                {
+                    lastWebException = ex;
+                    if (!IsRetryableWebException(ex) || attempt == MaxAttempts)
+                    {
+                        break;
+                    }
+
+                    await Task.Delay(500 * attempt);
+                }
+            }
+
+            var message = ReadErrorResponse(lastWebException);
+            throw new InvalidOperationException("DeepSeek 请求失败：" + message, lastWebException);
+        }
+
+        private async Task<string> PostJsonOnceAsync(string requestJson, string apiKey)
         {
             var request = (HttpWebRequest)WebRequest.Create(Endpoint);
             request.Method = "POST";
@@ -137,24 +163,21 @@ namespace AiBatchRenamer.Infrastructure.Services
                 await stream.WriteAsync(bytes, 0, bytes.Length);
             }
 
-            try
+            using (var response = (HttpWebResponse)await request.GetResponseAsync())
+            using (var stream = response.GetResponseStream())
+            using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var response = (HttpWebResponse)await request.GetResponseAsync())
-                using (var stream = response.GetResponseStream())
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    return await reader.ReadToEndAsync();
-                }
-            }
-            catch (WebException ex)
-            {
-                var message = ReadErrorResponse(ex);
-                throw new InvalidOperationException("DeepSeek 请求失败：" + message, ex);
+                return await reader.ReadToEndAsync();
             }
         }
 
         private static string ReadErrorResponse(WebException ex)
         {
+            if (ex == null)
+            {
+                return "未知网络错误";
+            }
+
             if (ex.Response == null)
             {
                 return ex.Message;
@@ -167,6 +190,30 @@ namespace AiBatchRenamer.Infrastructure.Services
                 var body = reader.ReadToEnd();
                 return string.IsNullOrWhiteSpace(body) ? ex.Message : body;
             }
+        }
+
+        public static bool IsRetryableWebException(WebException ex)
+        {
+            if (ex == null)
+            {
+                return false;
+            }
+
+            if (ex.Status == WebExceptionStatus.Timeout ||
+                ex.Status == WebExceptionStatus.ConnectFailure ||
+                ex.Status == WebExceptionStatus.NameResolutionFailure)
+            {
+                return true;
+            }
+
+            var response = ex.Response as HttpWebResponse;
+            if (response == null)
+            {
+                return false;
+            }
+
+            var statusCode = (int)response.StatusCode;
+            return statusCode == 429 || statusCode >= 500;
         }
 
         public static AiNamingResult ParseNamingResult(string content, int expectedCount)

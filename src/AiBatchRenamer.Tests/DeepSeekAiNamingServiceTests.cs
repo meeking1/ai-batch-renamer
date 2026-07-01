@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using AiBatchRenamer.Infrastructure.Services;
 
 namespace AiBatchRenamer.Tests
@@ -32,6 +33,13 @@ namespace AiBatchRenamer.Tests
             ExpectInvalidOperation(
                 () => DeepSeekAiNamingService.ParseNamingResult(json, 1),
                 "空文件名");
+        }
+
+        public static void IsRetryableWebException_ReturnsTrue_ForTimeout()
+        {
+            var ex = new WebException("timeout", null, WebExceptionStatus.Timeout, null);
+
+            TestAssert.True(DeepSeekAiNamingService.IsRetryableWebException(ex), "timeout should be retryable");
         }
 
         private static void ExpectInvalidOperation(Action action, string expectedMessage)

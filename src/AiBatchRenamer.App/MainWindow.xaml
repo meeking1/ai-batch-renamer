@@ -13,7 +13,7 @@
 
         <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#D8DDE6" BorderThickness="0,0,0,1" Padding="14">
             <DockPanel LastChildFill="False">
-                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal">
                     <Button Content="添加文件" Click="AddFiles_Click" />
                     <Button Content="添加文件夹" Click="AddFolder_Click" />
                     <Button Content="移除选中" Click="RemoveSelected_Click" />
@@ -23,7 +23,7 @@
                     <Button Content="打开日志" Click="OpenLogs_Click" />
                     <Button Content="清空" Click="Clear_Click" />
                     <Button Content="撤销上次操作" Click="Undo_Click" />
-                </StackPanel>
+                </WrapPanel>
                 <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="#566070"
                            Text="{Binding ElementName=MainWindowStatus, Path=Text}" />
             </DockPanel>
@@ -52,13 +52,14 @@
 
             <Border Grid.Column="1" Margin="12,0,0,0" Background="#FFFFFF" BorderBrush="#D8DDE6"
                     BorderThickness="1" Padding="14">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0">
                         <TextBlock Text="重命名模式" FontWeight="SemiBold" />
@@ -95,11 +96,12 @@
                                  Text="例如：命名为“项目资料”&#x0a;&#x0a;多名称模式下每行一个新名称&#x0a;&#x0a;模板模式示例：{name}-{index:000}" />
                     </StackPanel>
 
-                    <StackPanel Grid.Row="3">
-                        <Button Content="生成预览" Click="Preview_Click" Margin="0,0,0,8" />
-                        <Button Content="确认重命名" Click="Execute_Click" Margin="0" />
-                    </StackPanel>
-                </Grid>
+                        <StackPanel Grid.Row="3">
+                            <Button Content="生成预览" Click="Preview_Click" Margin="0,0,0,8" />
+                            <Button Content="确认重命名" Click="Execute_Click" Margin="0" />
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
             </Border>
         </Grid>
 
