@@ -87,6 +87,54 @@ namespace AiBatchRenamer.Tests
             }
         }
 
+        public static void Execute_SwapsFileNamesAndUndoRestoresOriginals()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerSwapTests-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+
+            try
+            {
+                var firstPath = Path.Combine(root, "a.txt");
+                var secondPath = Path.Combine(root, "b.txt");
+                File.WriteAllText(firstPath, "first");
+                File.WriteAllText(secondPath, "second");
+
+                var first = new RenameItem(firstPath)
+                {
+                    Index = 1,
+                    ProposedBaseName = "b"
+                };
+                var second = new RenameItem(secondPath)
+                {
+                    Index = 2,
+                    ProposedBaseName = "a"
+                };
+                var items = new List<RenameItem> { first, second };
+                new RenameValidationService().Validate(items);
+
+                var repository = new OperationLogRepository(Path.Combine(root, "logs"));
+                var log = new RenameExecutionService(repository).Execute(items);
+
+                TestAssert.Equal(2, log.Items.Count, "swap log item count");
+                TestAssert.Equal("second", File.ReadAllText(firstPath), "swap first path content");
+                TestAssert.Equal("first", File.ReadAllText(secondPath), "swap second path content");
+
+                var undo = new UndoService(repository).UndoLatest();
+
+                TestAssert.Equal(2, undo.SuccessCount, "swap undo success count");
+                TestAssert.Equal(0, undo.FailedCount, "swap undo failed count");
+                TestAssert.Equal("first", File.ReadAllText(firstPath), "undo first path content");
+                TestAssert.Equal("second", File.ReadAllText(secondPath), "undo second path content");
+            }
+            finally
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, true);
+                }
+            }
+        }
+
         public static void Undo_CaseOnlyRename_DoesNotTreatOriginalAsConflict()
         {
             var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerCaseUndoTests-" + Guid.NewGuid().ToString("N"));

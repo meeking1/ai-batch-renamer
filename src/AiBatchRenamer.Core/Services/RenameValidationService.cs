@@ -13,14 +13,20 @@ namespace AiBatchRenamer.Core.Services
             var proposedPathCounts = items
                 .GroupBy(item => NormalizePath(item.ProposedPath))
                 .ToDictionary(group => group.Key, group => group.Count());
+            var originalItemsByPath = items
+                .GroupBy(item => NormalizePath(item.OriginalPath))
+                .ToDictionary(group => group.Key, group => group.First());
 
             foreach (var item in items)
             {
-                ValidateItem(item, proposedPathCounts);
+                ValidateItem(item, proposedPathCounts, originalItemsByPath);
             }
         }
 
-        private static void ValidateItem(RenameItem item, IDictionary<string, int> proposedPathCounts)
+        private static void ValidateItem(
+            RenameItem item,
+            IDictionary<string, int> proposedPathCounts,
+            IDictionary<string, RenameItem> originalItemsByPath)
         {
             if (item.Status == RenameStatus.Invalid && !string.IsNullOrWhiteSpace(item.Message))
             {
@@ -66,7 +72,8 @@ namespace AiBatchRenamer.Core.Services
             }
 
             if (File.Exists(item.ProposedPath) &&
-                !string.Equals(item.OriginalPath, item.ProposedPath, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(item.OriginalPath, item.ProposedPath, StringComparison.OrdinalIgnoreCase) &&
+                !IsOccupiedByMovingSelectedItem(item.ProposedPath, originalItemsByPath))
             {
                 Mark(item, RenameStatus.Conflict, "目标文件已存在");
                 return;
@@ -90,6 +97,22 @@ namespace AiBatchRenamer.Core.Services
         private static string NormalizePath(string path)
         {
             return (path ?? string.Empty).Trim().ToUpperInvariant();
+        }
+
+        private static bool IsOccupiedByMovingSelectedItem(
+            string proposedPath,
+            IDictionary<string, RenameItem> originalItemsByPath)
+        {
+            RenameItem occupant;
+            if (!originalItemsByPath.TryGetValue(NormalizePath(proposedPath), out occupant))
+            {
+                return false;
+            }
+
+            return !string.Equals(
+                occupant.OriginalPath,
+                occupant.ProposedPath,
+                StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsReservedWindowsDeviceName(string baseName)

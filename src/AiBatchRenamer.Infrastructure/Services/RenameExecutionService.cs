@@ -23,49 +23,112 @@ namespace AiBatchRenamer.Infrastructure.Services
                 CreatedAt = DateTimeOffset.Now.ToString("o")
             };
 
-            foreach (var item in items.Where(item => item.Status == RenameStatus.Ready))
-            {
-                var logItem = new OperationLogItem
-                {
-                    OldPath = item.OriginalPath,
-                    NewPath = item.ProposedPath
-                };
+            var plans = items
+                .Where(item => item.Status == RenameStatus.Ready)
+                .Select(item => new RenameMovePlan(item))
+                .ToList();
 
+            foreach (var plan in plans)
+            {
+                plan.LogItem = new OperationLogItem
+                {
+                    OldPath = plan.Item.OriginalPath,
+                    NewPath = plan.Item.ProposedPath
+                };
+                log.Items.Add(plan.LogItem);
+            }
+
+            foreach (var plan in plans)
+            {
                 try
                 {
-                    MoveFile(item.OriginalPath, item.ProposedPath);
-                    item.Status = RenameStatus.Success;
-                    item.Message = "已重命名";
-                    logItem.Status = "success";
-                    logItem.Message = string.Empty;
+                    plan.TempPath = CreateTempPath(plan.Item.OriginalPath);
+                    File.Move(plan.Item.OriginalPath, plan.TempPath);
+                    plan.IsStaged = true;
                 }
                 catch (Exception ex)
                 {
-                    item.Status = RenameStatus.Failed;
-                    item.Message = ex.Message;
-                    logItem.Status = "failed";
-                    logItem.Message = ex.Message;
+                    MarkFailed(plan, ex.Message);
                 }
+            }
 
-                log.Items.Add(logItem);
+            foreach (var plan in plans.Where(plan => plan.IsStaged))
+            {
+                try
+                {
+                    if (File.Exists(plan.Item.ProposedPath))
+                    {
+                        throw new IOException("目标文件已存在");
+                    }
+
+                    File.Move(plan.TempPath, plan.Item.ProposedPath);
+                    plan.Item.Status = RenameStatus.Success;
+                    plan.Item.Message = "已重命名";
+                    plan.LogItem.Status = "success";
+                    plan.LogItem.Message = string.Empty;
+                }
+                catch (Exception ex)
+                {
+                    TryRestore(plan);
+                    MarkFailed(plan, ex.Message);
+                }
             }
 
             logRepository.Save(log);
             return log;
         }
 
-        private static void MoveFile(string oldPath, string newPath)
+        private static void MarkFailed(RenameMovePlan plan, string message)
         {
-            if (string.Equals(oldPath, newPath, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(oldPath, newPath, StringComparison.Ordinal))
+            plan.Item.Status = RenameStatus.Failed;
+            plan.Item.Message = message;
+            plan.LogItem.Status = "failed";
+            plan.LogItem.Message = message;
+        }
+
+        private static void TryRestore(RenameMovePlan plan)
+        {
+            try
             {
-                var tempPath = oldPath + ".rename-tmp-" + Guid.NewGuid().ToString("N");
-                File.Move(oldPath, tempPath);
-                File.Move(tempPath, newPath);
-                return;
+                if (File.Exists(plan.TempPath) && !File.Exists(plan.Item.OriginalPath))
+                {
+                    File.Move(plan.TempPath, plan.Item.OriginalPath);
+                }
+            }
+            catch
+            {
+                // Keep the original failure visible to the user.
+            }
+        }
+
+        private static string CreateTempPath(string originalPath)
+        {
+            var directory = Path.GetDirectoryName(originalPath) ?? string.Empty;
+            var extension = Path.GetExtension(originalPath);
+            string tempPath;
+            do
+            {
+                tempPath = Path.Combine(directory, ".abr-" + Guid.NewGuid().ToString("N") + extension);
+            }
+            while (File.Exists(tempPath));
+
+            return tempPath;
+        }
+
+        private class RenameMovePlan
+        {
+            public RenameMovePlan(RenameItem item)
+            {
+                Item = item;
             }
 
-            File.Move(oldPath, newPath);
+            public RenameItem Item { get; private set; }
+
+            public OperationLogItem LogItem { get; set; }
+
+            public string TempPath { get; set; }
+
+            public bool IsStaged { get; set; }
         }
     }
 }

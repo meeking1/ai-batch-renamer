@@ -33,6 +33,7 @@ namespace AiBatchRenamer.Infrastructure.Services
 
             var success = 0;
             var failed = 0;
+            var plans = new System.Collections.Generic.List<UndoMovePlan>();
 
             for (var i = log.Items.Count - 1; i >= 0; i--)
             {
@@ -42,26 +43,49 @@ namespace AiBatchRenamer.Infrastructure.Services
                     continue;
                 }
 
+                plans.Add(new UndoMovePlan(item));
+            }
+
+            foreach (var plan in plans)
+            {
                 try
                 {
-                    if (!File.Exists(item.NewPath))
+                    if (!File.Exists(plan.Item.NewPath))
                     {
                         failed++;
                         continue;
                     }
 
-                    if (File.Exists(item.OldPath) &&
-                        !string.Equals(item.OldPath, item.NewPath, StringComparison.OrdinalIgnoreCase))
+                    plan.TempPath = CreateTempPath(plan.Item.NewPath);
+                    File.Move(plan.Item.NewPath, plan.TempPath);
+                    plan.IsStaged = true;
+                }
+                catch
+                {
+                    failed++;
+                }
+            }
+
+            foreach (var plan in plans)
+            {
+                if (!plan.IsStaged)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    if (File.Exists(plan.Item.OldPath))
                     {
-                        failed++;
-                        continue;
+                        throw new IOException("原路径已被占用");
                     }
 
-                    MoveFile(item.NewPath, item.OldPath);
+                    File.Move(plan.TempPath, plan.Item.OldPath);
                     success++;
                 }
                 catch
                 {
+                    TryRestore(plan);
                     failed++;
                 }
             }
@@ -78,18 +102,47 @@ namespace AiBatchRenamer.Infrastructure.Services
             return new UndoResult(success > 0 && failed == 0, success, failed, message);
         }
 
-        private static void MoveFile(string oldPath, string newPath)
+        private static void TryRestore(UndoMovePlan plan)
         {
-            if (string.Equals(oldPath, newPath, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(oldPath, newPath, StringComparison.Ordinal))
+            try
             {
-                var tempPath = oldPath + ".undo-tmp-" + Guid.NewGuid().ToString("N");
-                File.Move(oldPath, tempPath);
-                File.Move(tempPath, newPath);
-                return;
+                if (File.Exists(plan.TempPath) && !File.Exists(plan.Item.NewPath))
+                {
+                    File.Move(plan.TempPath, plan.Item.NewPath);
+                }
+            }
+            catch
+            {
+                // Keep the undo result focused on the failed item count.
+            }
+        }
+
+        private static string CreateTempPath(string sourcePath)
+        {
+            var directory = Path.GetDirectoryName(sourcePath) ?? string.Empty;
+            var extension = Path.GetExtension(sourcePath);
+            string tempPath;
+            do
+            {
+                tempPath = Path.Combine(directory, ".abr-undo-" + Guid.NewGuid().ToString("N") + extension);
+            }
+            while (File.Exists(tempPath));
+
+            return tempPath;
+        }
+
+        private class UndoMovePlan
+        {
+            public UndoMovePlan(OperationLogItem item)
+            {
+                Item = item;
             }
 
-            File.Move(oldPath, newPath);
+            public OperationLogItem Item { get; private set; }
+
+            public string TempPath { get; set; }
+
+            public bool IsStaged { get; set; }
         }
     }
 

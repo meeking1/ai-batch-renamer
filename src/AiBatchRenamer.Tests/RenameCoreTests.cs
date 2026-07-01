@@ -46,6 +46,21 @@ namespace AiBatchRenamer.Tests
             TestAssert.Equal(RenameStatus.Conflict, items[1].Status, "second duplicate status");
         }
 
+        public static void Validation_AllowsSelectedFilesToSwapNames()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerCoreSwapTests-" + Guid.NewGuid().ToString("N"));
+            var items = new List<RenameItem>
+            {
+                new RenameItem(Path.Combine(root, "a.txt")) { Index = 1, Status = RenameStatus.Pending, ProposedBaseName = "b" },
+                new RenameItem(Path.Combine(root, "b.txt")) { Index = 2, Status = RenameStatus.Pending, ProposedBaseName = "a" }
+            };
+
+            new RenameValidationService().Validate(items);
+
+            TestAssert.Equal(RenameStatus.Ready, items[0].Status, "first swap status");
+            TestAssert.Equal(RenameStatus.Ready, items[1].Status, "second swap status");
+        }
+
         public static void Validation_RejectsReservedWindowsDeviceNames()
         {
             var items = CreateItems("a.txt", "b.txt");
