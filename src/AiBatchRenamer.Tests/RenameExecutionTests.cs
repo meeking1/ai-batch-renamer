@@ -178,6 +178,8 @@ namespace AiBatchRenamer.Tests
                 TestAssert.True(File.Exists(Path.Combine(root, "E6108double.jpg")), "mixed first renamed");
                 TestAssert.True(File.Exists(unchangedPath), "mixed unchanged remains");
                 TestAssert.True(File.Exists(Path.Combine(root, "E6253double.jpg")), "mixed last renamed");
+                TestAssert.Equal("first", File.ReadAllText(Path.Combine(root, "E6108double.jpg")), "mixed first content");
+                TestAssert.Equal("last", File.ReadAllText(Path.Combine(root, "E6253double.jpg")), "mixed last content");
             }
             finally
             {

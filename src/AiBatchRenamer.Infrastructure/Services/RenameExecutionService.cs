@@ -38,16 +38,57 @@ namespace AiBatchRenamer.Infrastructure.Services
                 log.Items.Add(plan.LogItem);
             }
 
+            if (RequiresStagedMove(plans))
+            {
+                WriteDiagnostic("RenameExecutionService using staged move. Count=" + plans.Count);
+                ExecuteStaged(plans);
+            }
+            else
+            {
+                WriteDiagnostic("RenameExecutionService using direct move. Count=" + plans.Count);
+                ExecuteDirect(plans);
+            }
+
+            WriteDiagnostic("RenameExecutionService saving operation log. Items=" + log.Items.Count);
+            logRepository.Save(log);
+            WriteDiagnostic("RenameExecutionService saved operation log.");
+            return log;
+        }
+
+        private static void ExecuteDirect(IEnumerable<RenameMovePlan> plans)
+        {
             foreach (var plan in plans)
             {
                 try
                 {
-                    plan.TempPath = CreateTempPath(plan.Item.OriginalPath);
-                    File.Move(plan.Item.OriginalPath, plan.TempPath);
-                    plan.IsStaged = true;
+                    WriteDiagnostic("Direct move start: " + plan.Item.OriginalName + " -> " + plan.Item.ProposedName);
+                    File.Move(plan.Item.OriginalPath, plan.Item.ProposedPath);
+                    MarkSuccess(plan);
+                    WriteDiagnostic("Direct move success: " + plan.Item.ProposedName);
                 }
                 catch (Exception ex)
                 {
+                    WriteDiagnostic("Direct move failed: " + plan.Item.OriginalName + " Message=" + ex.Message);
+                    MarkFailed(plan, ex.Message);
+                }
+            }
+        }
+
+        private static void ExecuteStaged(IList<RenameMovePlan> plans)
+        {
+            foreach (var plan in plans)
+            {
+                try
+                {
+                    WriteDiagnostic("Stage move start: " + plan.Item.OriginalName);
+                    plan.TempPath = CreateTempPath(plan.Item.OriginalPath);
+                    File.Move(plan.Item.OriginalPath, plan.TempPath);
+                    plan.IsStaged = true;
+                    WriteDiagnostic("Stage move success: " + plan.Item.OriginalName);
+                }
+                catch (Exception ex)
+                {
+                    WriteDiagnostic("Stage move failed: " + plan.Item.OriginalName + " Message=" + ex.Message);
                     MarkFailed(plan, ex.Message);
                 }
             }
@@ -56,26 +97,43 @@ namespace AiBatchRenamer.Infrastructure.Services
             {
                 try
                 {
+                    WriteDiagnostic("Final move start: " + plan.Item.ProposedName);
                     if (File.Exists(plan.Item.ProposedPath))
                     {
                         throw new IOException("目标文件已存在");
                     }
 
                     File.Move(plan.TempPath, plan.Item.ProposedPath);
-                    plan.Item.Status = RenameStatus.Success;
-                    plan.Item.Message = "已重命名";
-                    plan.LogItem.Status = "success";
-                    plan.LogItem.Message = string.Empty;
+                    MarkSuccess(plan);
+                    WriteDiagnostic("Final move success: " + plan.Item.ProposedName);
                 }
                 catch (Exception ex)
                 {
                     TryRestore(plan);
+                    WriteDiagnostic("Final move failed: " + plan.Item.ProposedName + " Message=" + ex.Message);
                     MarkFailed(plan, ex.Message);
                 }
             }
+        }
 
-            logRepository.Save(log);
-            return log;
+        private static bool RequiresStagedMove(IList<RenameMovePlan> plans)
+        {
+            var originalPaths = new HashSet<string>(
+                plans.Select(plan => NormalizePath(plan.Item.OriginalPath)),
+                StringComparer.OrdinalIgnoreCase);
+
+            return plans.Any(plan =>
+                IsCaseOnlyRename(plan.Item.OriginalPath, plan.Item.ProposedPath) ||
+                (originalPaths.Contains(NormalizePath(plan.Item.ProposedPath)) &&
+                    !string.Equals(plan.Item.OriginalPath, plan.Item.ProposedPath, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        private static void MarkSuccess(RenameMovePlan plan)
+        {
+            plan.Item.Status = RenameStatus.Success;
+            plan.Item.Message = "已重命名";
+            plan.LogItem.Status = "success";
+            plan.LogItem.Message = string.Empty;
         }
 
         private static void MarkFailed(RenameMovePlan plan, string message)
@@ -113,6 +171,36 @@ namespace AiBatchRenamer.Infrastructure.Services
             while (File.Exists(tempPath));
 
             return tempPath;
+        }
+
+        private static bool IsCaseOnlyRename(string oldPath, string newPath)
+        {
+            return string.Equals(oldPath, newPath, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(oldPath, newPath, StringComparison.Ordinal);
+        }
+
+        private static string NormalizePath(string path)
+        {
+            return (path ?? string.Empty).Trim().ToUpperInvariant();
+        }
+
+        private static void WriteDiagnostic(string message)
+        {
+            try
+            {
+                var logDirectory = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "AiBatchRenamer",
+                    "CrashLogs");
+                Directory.CreateDirectory(logDirectory);
+                File.AppendAllText(
+                    Path.Combine(logDirectory, "diagnostic.log"),
+                    DateTimeOffset.Now.ToString("o") + " " + message + Environment.NewLine);
+            }
+            catch
+            {
+                // Diagnostics must not interrupt rename execution.
+            }
         }
 
         private class RenameMovePlan
