@@ -213,3 +213,5 @@ deepseek-v4-flash
 - 执行前必须预览
 - 有冲突、非法字符、缺少名称时阻止执行
 - 默认不上传文件内容
+
+隐私和数据说明见 [PRIVACY.md](PRIVACY.md)。
