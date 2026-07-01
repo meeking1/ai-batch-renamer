@@ -47,6 +47,7 @@ namespace AiBatchRenamer.App
 
             Items = new ObservableCollection<RenameItemViewModel>();
             DataContext = this;
+            Title = "AI 批量重命名 v" + App.DisplayVersion + " by Dogdog";
             LoadSettingsIntoUi();
             RefreshOperationHistory();
         }
@@ -361,12 +362,19 @@ namespace AiBatchRenamer.App
         {
             try
             {
+                App.LogDiagnostic("Execute_Click started. ItemCount=" + Items.Count);
+                FilesGrid.CommitEdit();
+                FilesGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row, true);
+                App.LogDiagnostic("DataGrid edit committed.");
+
                 validationService.Validate(Items.Select(item => item.Model).ToList());
                 RefreshItems();
+                App.LogDiagnostic("Validation finished.");
 
                 var readyItems = Items.Where(item => item.Model.Status == RenameStatus.Ready).ToList();
                 if (readyItems.Count == 0)
                 {
+                    App.LogDiagnostic("Execute blocked: no ready items.");
                     UpdateStatus("没有可执行的重命名项，请先生成并检查预览。");
                     return;
                 }
@@ -378,6 +386,7 @@ namespace AiBatchRenamer.App
 
                 if (blockedCount > 0)
                 {
+                    App.LogDiagnostic("Execute blocked: blockedCount=" + blockedCount);
                     UpdateStatus("仍有无效、冲突或未预览的文件，不能执行。");
                     return;
                 }
@@ -391,25 +400,30 @@ namespace AiBatchRenamer.App
 
                 if (confirm != MessageBoxResult.OK)
                 {
+                    App.LogDiagnostic("Execute canceled by user.");
                     return;
                 }
 
+                App.LogDiagnostic("Rename execution started. ReadyCount=" + readyItems.Count);
                 var log = executionService.Execute(Items.Select(item => item.Model).ToList());
+                App.LogDiagnostic("Rename execution finished. LogItems=" + log.Items.Count);
 
                 foreach (var item in Items.Where(item => item.Model.Status == RenameStatus.Success).ToList())
                 {
                     item.MarkAsCurrentFile();
                 }
+                App.LogDiagnostic("Successful items marked as current.");
 
                 RefreshItems();
                 var successCount = log.Items.Count(item => item.Status == "success");
                 var failedCount = log.Items.Count(item => item.Status == "failed");
                 UpdateStatus(string.Format("重命名完成。成功：{0}，失败：{1}。", successCount, failedCount));
                 RefreshOperationHistory();
+                App.LogDiagnostic("Execute_Click completed. Success=" + successCount + ", Failed=" + failedCount);
             }
             catch (Exception ex)
             {
-                var logPath = App.LogException(ex);
+                var logPath = App.LogException(ex, "Execute_Click");
                 UpdateStatus("重命名失败：" + ex.Message);
                 MessageBox.Show(
                     this,
