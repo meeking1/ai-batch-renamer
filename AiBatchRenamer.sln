@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiBatchRenamer.Core", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiBatchRenamer.Infrastructure", "src\AiBatchRenamer.Infrastructure\AiBatchRenamer.Infrastructure.csproj", "{58F1E05D-13C2-4BC7-A1CE-66B1D38F2222}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiBatchRenamer.Tests", "src\AiBatchRenamer.Tests\AiBatchRenamer.Tests.csproj", "{A2A35B79-D2F7-4C2B-A4A8-7795939E78C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{58F1E05D-13C2-4BC7-A1CE-66B1D38F2222}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58F1E05D-13C2-4BC7-A1CE-66B1D38F2222}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58F1E05D-13C2-4BC7-A1CE-66B1D38F2222}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2A35B79-D2F7-4C2B-A4A8-7795939E78C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2A35B79-D2F7-4C2B-A4A8-7795939E78C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2A35B79-D2F7-4C2B-A4A8-7795939E78C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2A35B79-D2F7-4C2B-A4A8-7795939E78C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

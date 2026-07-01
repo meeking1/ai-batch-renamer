@@ -59,6 +59,12 @@ msbuild AiBatchRenamer.sln /p:Configuration=Release
 powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1
 ```
 
+构建并运行核心测试：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1 -RunTests
+```
+
 构建产物：
 
 ```text
@@ -70,6 +76,8 @@ src\AiBatchRenamer.App\bin\Release\AiBatchRenamer.exe
 ```text
 .github\workflows\windows-build.yml
 ```
+
+CI 会同时运行 `AiBatchRenamer.Tests.exe`，覆盖核心重命名规则、校验、执行和撤销。
 
 ## 使用
 

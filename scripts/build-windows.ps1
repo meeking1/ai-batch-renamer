@@ -1,5 +1,6 @@
 param(
-    [string]$Configuration = "Release"
+    [string]$Configuration = "Release",
+    [switch]$RunTests
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,6 +13,12 @@ if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
         $msbuildPath = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
         if ($msbuildPath) {
             & $msbuildPath $solutionPath /p:Configuration=$Configuration
+            if ($LASTEXITCODE -ne 0) {
+                exit $LASTEXITCODE
+            }
+            if ($RunTests) {
+                & (Join-Path $PSScriptRoot "..\src\AiBatchRenamer.Tests\bin\$Configuration\AiBatchRenamer.Tests.exe")
+            }
             exit $LASTEXITCODE
         }
     }
@@ -20,3 +27,10 @@ if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
 }
 
 msbuild $solutionPath /p:Configuration=$Configuration
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+if ($RunTests) {
+    & (Join-Path $PSScriptRoot "..\src\AiBatchRenamer.Tests\bin\$Configuration\AiBatchRenamer.Tests.exe")
+}
