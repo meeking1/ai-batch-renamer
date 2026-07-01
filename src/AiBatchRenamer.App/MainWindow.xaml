@@ -16,6 +16,9 @@
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                     <Button Content="添加文件" Click="AddFiles_Click" />
                     <Button Content="添加文件夹" Click="AddFolder_Click" />
+                    <Button Content="移除选中" Click="RemoveSelected_Click" />
+                    <Button Content="上移" Click="MoveSelectedUp_Click" />
+                    <Button Content="下移" Click="MoveSelectedDown_Click" />
                     <Button Content="清空" Click="Clear_Click" />
                     <Button Content="撤销上次操作" Click="Undo_Click" />
                 </StackPanel>
@@ -64,6 +67,7 @@
                         </ComboBox>
 
                         <CheckBox x:Name="SanitizeCheckBox" Content="自动替换非法字符" IsChecked="True" Margin="0,0,0,12" />
+                        <CheckBox x:Name="RecursiveFolderCheckBox" Content="添加文件夹时包含子文件夹" IsChecked="False" Margin="0,0,0,12" />
 
                         <TextBlock Text="DeepSeek 设置" FontWeight="SemiBold" />
                         <TextBox x:Name="ModelTextBox" Height="28" Text="deepseek-v4-flash" />

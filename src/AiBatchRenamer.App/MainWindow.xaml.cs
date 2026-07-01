@@ -69,9 +69,37 @@ namespace AiBatchRenamer.App
 
                 if (dialog.ShowDialog() == WinForms.DialogResult.OK)
                 {
-                    AddFiles(Directory.GetFiles(dialog.SelectedPath));
+                    var searchOption = RecursiveFolderCheckBox.IsChecked == true
+                        ? SearchOption.AllDirectories
+                        : SearchOption.TopDirectoryOnly;
+                    AddFiles(EnumerateFilesSafe(dialog.SelectedPath, searchOption));
                 }
             }
+        }
+
+        private void RemoveSelected_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedItems = FilesGrid.SelectedItems
+                .OfType<RenameItemViewModel>()
+                .ToList();
+
+            foreach (var item in selectedItems)
+            {
+                Items.Remove(item);
+            }
+
+            ReindexItems();
+            UpdateStatus(string.Format("已移除 {0} 个文件，当前共 {1} 个。", selectedItems.Count, Items.Count));
+        }
+
+        private void MoveSelectedUp_Click(object sender, RoutedEventArgs e)
+        {
+            MoveSelectedItems(-1);
+        }
+
+        private void MoveSelectedDown_Click(object sender, RoutedEventArgs e)
+        {
+            MoveSelectedItems(1);
         }
 
         private void Clear_Click(object sender, RoutedEventArgs e)
@@ -195,7 +223,7 @@ namespace AiBatchRenamer.App
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-                AddFiles(ExpandFiles(paths));
+                AddFiles(ExpandFiles(paths, RecursiveFolderCheckBox.IsChecked == true));
             }
         }
 
@@ -229,7 +257,7 @@ namespace AiBatchRenamer.App
             UpdateStatus(string.Format("已添加 {0} 个文件，当前共 {1} 个。", added, Items.Count));
         }
 
-        private static IEnumerable<string> ExpandFiles(IEnumerable<string> paths)
+        private static IEnumerable<string> ExpandFiles(IEnumerable<string> paths, bool includeSubdirectories)
         {
             foreach (var path in paths)
             {
@@ -239,10 +267,117 @@ namespace AiBatchRenamer.App
                 }
                 else if (Directory.Exists(path))
                 {
-                    foreach (var filePath in Directory.GetFiles(path))
+                    var searchOption = includeSubdirectories
+                        ? SearchOption.AllDirectories
+                        : SearchOption.TopDirectoryOnly;
+
+                    foreach (var filePath in EnumerateFilesSafe(path, searchOption))
                     {
                         yield return filePath;
                     }
+                }
+            }
+        }
+
+        private void MoveSelectedItems(int direction)
+        {
+            var selectedItems = FilesGrid.SelectedItems
+                .OfType<RenameItemViewModel>()
+                .ToList();
+
+            if (selectedItems.Count == 0)
+            {
+                UpdateStatus("请先选择要移动的文件。");
+                return;
+            }
+
+            var ordered = direction < 0
+                ? selectedItems.OrderBy(item => Items.IndexOf(item)).ToList()
+                : selectedItems.OrderByDescending(item => Items.IndexOf(item)).ToList();
+
+            foreach (var item in ordered)
+            {
+                var oldIndex = Items.IndexOf(item);
+                var newIndex = oldIndex + direction;
+                if (newIndex < 0 || newIndex >= Items.Count)
+                {
+                    continue;
+                }
+
+                if (selectedItems.Contains(Items[newIndex]))
+                {
+                    continue;
+                }
+
+                Items.Move(oldIndex, newIndex);
+            }
+
+            ReindexItems();
+            FilesGrid.SelectedItems.Clear();
+            foreach (var item in selectedItems)
+            {
+                FilesGrid.SelectedItems.Add(item);
+            }
+
+            UpdateStatus("已调整文件顺序。");
+        }
+
+        private static IEnumerable<string> EnumerateFilesSafe(string rootPath, SearchOption searchOption)
+        {
+            if (searchOption == SearchOption.TopDirectoryOnly)
+            {
+                string[] files;
+                try
+                {
+                    files = Directory.GetFiles(rootPath);
+                }
+                catch
+                {
+                    yield break;
+                }
+
+                foreach (var file in files)
+                {
+                    yield return file;
+                }
+
+                yield break;
+            }
+
+            var pending = new Stack<string>();
+            pending.Push(rootPath);
+
+            while (pending.Count > 0)
+            {
+                var current = pending.Pop();
+                string[] files;
+                try
+                {
+                    files = Directory.GetFiles(current);
+                }
+                catch
+                {
+                    files = new string[0];
+                }
+
+                foreach (var file in files)
+                {
+                    yield return file;
+                }
+
+                string[] directories;
+                try
+                {
+                    directories = Directory.GetDirectories(current);
+                }
+                catch
+                {
+                    directories = new string[0];
+                }
+
+                foreach (var directory in directories)
+                {
+                    pending.Push(directory);
                 }
             }
         }
