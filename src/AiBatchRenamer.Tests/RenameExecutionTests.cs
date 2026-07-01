@@ -135,6 +135,59 @@ namespace AiBatchRenamer.Tests
             }
         }
 
+        public static void Execute_MixedReadyAndUnchanged_RenamesReadyItems()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerMixedTests-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+
+            try
+            {
+                var firstPath = Path.Combine(root, "E6108双色.jpg");
+                var unchangedPath = Path.Combine(root, "E6216.jpg");
+                var lastPath = Path.Combine(root, "E6253双色.jpg");
+                File.WriteAllText(firstPath, "first");
+                File.WriteAllText(unchangedPath, "unchanged");
+                File.WriteAllText(lastPath, "last");
+
+                var first = new RenameItem(firstPath)
+                {
+                    Index = 1,
+                    ProposedBaseName = "E6108double"
+                };
+                var unchanged = new RenameItem(unchangedPath)
+                {
+                    Index = 2,
+                    ProposedBaseName = "E6216"
+                };
+                var last = new RenameItem(lastPath)
+                {
+                    Index = 3,
+                    ProposedBaseName = "E6253double"
+                };
+                var items = new List<RenameItem> { first, unchanged, last };
+                new RenameValidationService().Validate(items);
+
+                TestAssert.Equal(RenameStatus.Ready, first.Status, "mixed first status");
+                TestAssert.Equal(RenameStatus.Unchanged, unchanged.Status, "mixed unchanged status");
+                TestAssert.Equal(RenameStatus.Ready, last.Status, "mixed last status");
+
+                var repository = new OperationLogRepository(Path.Combine(root, "logs"));
+                var log = new RenameExecutionService(repository).Execute(items);
+
+                TestAssert.Equal(2, log.Items.Count, "mixed log item count");
+                TestAssert.True(File.Exists(Path.Combine(root, "E6108double.jpg")), "mixed first renamed");
+                TestAssert.True(File.Exists(unchangedPath), "mixed unchanged remains");
+                TestAssert.True(File.Exists(Path.Combine(root, "E6253double.jpg")), "mixed last renamed");
+            }
+            finally
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, true);
+                }
+            }
+        }
+
         public static void Undo_CaseOnlyRename_DoesNotTreatOriginalAsConflict()
         {
             var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerCaseUndoTests-" + Guid.NewGuid().ToString("N"));

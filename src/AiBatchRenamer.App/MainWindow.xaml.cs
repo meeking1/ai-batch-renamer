@@ -359,51 +359,65 @@ namespace AiBatchRenamer.App
 
         private void Execute_Click(object sender, RoutedEventArgs e)
         {
-            validationService.Validate(Items.Select(item => item.Model).ToList());
-            RefreshItems();
-
-            var readyItems = Items.Where(item => item.Model.Status == RenameStatus.Ready).ToList();
-            if (readyItems.Count == 0)
+            try
             {
-                UpdateStatus("没有可执行的重命名项，请先生成并检查预览。");
-                return;
+                validationService.Validate(Items.Select(item => item.Model).ToList());
+                RefreshItems();
+
+                var readyItems = Items.Where(item => item.Model.Status == RenameStatus.Ready).ToList();
+                if (readyItems.Count == 0)
+                {
+                    UpdateStatus("没有可执行的重命名项，请先生成并检查预览。");
+                    return;
+                }
+
+                var blockedCount = Items.Count(item =>
+                    item.Model.Status == RenameStatus.Invalid ||
+                    item.Model.Status == RenameStatus.Conflict ||
+                    item.Model.Status == RenameStatus.Pending);
+
+                if (blockedCount > 0)
+                {
+                    UpdateStatus("仍有无效、冲突或未预览的文件，不能执行。");
+                    return;
+                }
+
+                var confirm = MessageBox.Show(
+                    this,
+                    string.Format("即将重命名 {0} 个文件。执行前请确认预览无误。", readyItems.Count),
+                    "确认重命名",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Warning);
+
+                if (confirm != MessageBoxResult.OK)
+                {
+                    return;
+                }
+
+                var log = executionService.Execute(Items.Select(item => item.Model).ToList());
+
+                foreach (var item in Items.Where(item => item.Model.Status == RenameStatus.Success).ToList())
+                {
+                    item.MarkAsCurrentFile();
+                }
+
+                RefreshItems();
+                var successCount = log.Items.Count(item => item.Status == "success");
+                var failedCount = log.Items.Count(item => item.Status == "failed");
+                UpdateStatus(string.Format("重命名完成。成功：{0}，失败：{1}。", successCount, failedCount));
+                RefreshOperationHistory();
             }
-
-            var blockedCount = Items.Count(item =>
-                item.Model.Status == RenameStatus.Invalid ||
-                item.Model.Status == RenameStatus.Conflict ||
-                item.Model.Status == RenameStatus.Pending);
-
-            if (blockedCount > 0)
+            catch (Exception ex)
             {
-                UpdateStatus("仍有无效、冲突或未预览的文件，不能执行。");
-                return;
+                var logPath = App.LogException(ex);
+                UpdateStatus("重命名失败：" + ex.Message);
+                MessageBox.Show(
+                    this,
+                    "重命名失败，程序已保留在当前页面。\r\n\r\n错误信息：" + ex.Message + "\r\n\r\n日志位置：" + logPath,
+                    "重命名失败",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
-
-            var confirm = MessageBox.Show(
-                this,
-                string.Format("即将重命名 {0} 个文件。执行前请确认预览无误。", readyItems.Count),
-                "确认重命名",
-                MessageBoxButton.OKCancel,
-                MessageBoxImage.Warning);
-
-            if (confirm != MessageBoxResult.OK)
-            {
-                return;
-            }
-
-            var log = executionService.Execute(Items.Select(item => item.Model).ToList());
-
-            foreach (var item in Items.Where(item => item.Model.Status == RenameStatus.Success))
-            {
-                item.MarkAsCurrentFile();
-            }
-
-            RefreshItems();
-            var successCount = log.Items.Count(item => item.Status == "success");
-            var failedCount = log.Items.Count(item => item.Status == "failed");
-            UpdateStatus(string.Format("重命名完成。成功：{0}，失败：{1}。", successCount, failedCount));
-            RefreshOperationHistory();
         }
 
         private void Window_DragOver(object sender, DragEventArgs e)

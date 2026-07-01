@@ -18,6 +18,7 @@ namespace AiBatchRenamer.Tests
                 RenameCoreTests.NaturalLanguagePreview_ParsesReplaceInstruction,
                 RenameExecutionTests.ExecuteAndUndo_RenamesFilesAndRestoresOriginalNames,
                 RenameExecutionTests.Execute_SwapsFileNamesAndUndoRestoresOriginals,
+                RenameExecutionTests.Execute_MixedReadyAndUnchanged_RenamesReadyItems,
                 RenameExecutionTests.UndoSpecificLog_DoesNotClearLatestPointer,
                 RenameExecutionTests.Undo_CaseOnlyRename_DoesNotTreatOriginalAsConflict,
                 RenameExecutionTests.ListRecent_ReturnsSavedOperationLogs,
