@@ -17,6 +17,7 @@ namespace AiBatchRenamer.Tests
                 RenameCoreTests.NaturalLanguagePreview_ParsesReplaceInstruction,
                 RenameExecutionTests.ExecuteAndUndo_RenamesFilesAndRestoresOriginalNames,
                 RenameExecutionTests.UndoSpecificLog_DoesNotClearLatestPointer,
+                RenameExecutionTests.Undo_CaseOnlyRename_DoesNotTreatOriginalAsConflict,
                 RenameExecutionTests.ListRecent_ReturnsSavedOperationLogs,
                 DeepSeekAiNamingServiceTests.ParseNamingResult_ReturnsItems_WhenJsonIsValid,
                 DeepSeekAiNamingServiceTests.ParseNamingResult_RejectsDuplicateIndexes,

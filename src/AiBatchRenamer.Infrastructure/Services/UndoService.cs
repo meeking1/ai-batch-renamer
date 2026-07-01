@@ -50,13 +50,14 @@ namespace AiBatchRenamer.Infrastructure.Services
                         continue;
                     }
 
-                    if (File.Exists(item.OldPath))
+                    if (File.Exists(item.OldPath) &&
+                        !string.Equals(item.OldPath, item.NewPath, StringComparison.OrdinalIgnoreCase))
                     {
                         failed++;
                         continue;
                     }
 
-                    File.Move(item.NewPath, item.OldPath);
+                    MoveFile(item.NewPath, item.OldPath);
                     success++;
                 }
                 catch
@@ -75,6 +76,20 @@ namespace AiBatchRenamer.Infrastructure.Services
                 : "撤销部分完成，存在失败项";
 
             return new UndoResult(success > 0 && failed == 0, success, failed, message);
+        }
+
+        private static void MoveFile(string oldPath, string newPath)
+        {
+            if (string.Equals(oldPath, newPath, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(oldPath, newPath, StringComparison.Ordinal))
+            {
+                var tempPath = oldPath + ".undo-tmp-" + Guid.NewGuid().ToString("N");
+                File.Move(oldPath, tempPath);
+                File.Move(tempPath, newPath);
+                return;
+            }
+
+            File.Move(oldPath, newPath);
         }
     }
 

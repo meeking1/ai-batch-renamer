@@ -87,6 +87,42 @@ namespace AiBatchRenamer.Tests
             }
         }
 
+        public static void Undo_CaseOnlyRename_DoesNotTreatOriginalAsConflict()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerCaseUndoTests-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+
+            try
+            {
+                var originalPath = Path.Combine(root, "case.txt");
+                File.WriteAllText(originalPath, "content");
+
+                var item = new RenameItem(originalPath)
+                {
+                    Index = 1,
+                    ProposedBaseName = "CASE"
+                };
+                var items = new List<RenameItem> { item };
+                new RenameValidationService().Validate(items);
+
+                var repository = new OperationLogRepository(Path.Combine(root, "logs"));
+                new RenameExecutionService(repository).Execute(items);
+
+                var result = new UndoService(repository).UndoLatest();
+
+                TestAssert.Equal(1, result.SuccessCount, "case-only undo success count");
+                TestAssert.Equal(0, result.FailedCount, "case-only undo failed count");
+                TestAssert.True(File.Exists(originalPath), "case-only undo restores original path");
+            }
+            finally
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, true);
+                }
+            }
+        }
+
         public static void UndoSpecificLog_DoesNotClearLatestPointer()
         {
             var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerSpecificUndoTests-" + Guid.NewGuid().ToString("N"));
