@@ -108,11 +108,11 @@
                         </StackPanel>
 
                         <StackPanel Grid.Row="2">
-                            <TextBlock Text="命名要求 / 名称列表" FontWeight="SemiBold" />
-                            <TextBox x:Name="InstructionTextBox" AcceptsReturn="True" TextWrapping="Wrap"
-                                     VerticalScrollBarVisibility="Auto" MinHeight="220"
-                                     Text="例如：命名为“项目资料”&#x0a;&#x0a;多名称模式下每行一个新名称&#x0a;&#x0a;模板模式示例：{name}-{index:000}" />
-                        </StackPanel>
+                        <TextBlock Text="命名要求 / 名称列表" FontWeight="SemiBold" />
+                        <TextBox x:Name="InstructionTextBox" AcceptsReturn="True" TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto" MinHeight="220"
+                                 ToolTip="自然语言示例：命名为“项目资料”。多名称模式下每行一个新名称。模板示例：{name}-{index:000}" />
+                    </StackPanel>
 
                         <StackPanel Grid.Row="3">
                             <Button Content="生成预览" Click="Preview_Click" Margin="0,0,0,8" />
