@@ -46,6 +46,18 @@ namespace AiBatchRenamer.Tests
             TestAssert.Equal(RenameStatus.Conflict, items[1].Status, "second duplicate status");
         }
 
+        public static void Validation_RejectsReservedWindowsDeviceNames()
+        {
+            var items = CreateItems("a.txt", "b.txt");
+            items[0].ProposedBaseName = "CON";
+            items[1].ProposedBaseName = "LPT1";
+
+            new RenameValidationService().Validate(items);
+
+            TestAssert.Equal(RenameStatus.Invalid, items[0].Status, "CON status");
+            TestAssert.Equal(RenameStatus.Invalid, items[1].Status, "LPT1 status");
+        }
+
         public static void NaturalLanguagePreview_ParsesReplaceInstruction()
         {
             var items = CreateItems("产品-草稿.txt");

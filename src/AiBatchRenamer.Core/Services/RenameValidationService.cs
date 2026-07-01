@@ -39,6 +39,12 @@ namespace AiBatchRenamer.Core.Services
                 return;
             }
 
+            if (IsReservedWindowsDeviceName(item.ProposedBaseName))
+            {
+                Mark(item, RenameStatus.Invalid, "新文件名是 Windows 保留设备名");
+                return;
+            }
+
             if (item.ProposedName.EndsWith(".", StringComparison.Ordinal) ||
                 item.ProposedName.EndsWith(" ", StringComparison.Ordinal))
             {
@@ -84,6 +90,31 @@ namespace AiBatchRenamer.Core.Services
         private static string NormalizePath(string path)
         {
             return (path ?? string.Empty).Trim().ToUpperInvariant();
+        }
+
+        private static bool IsReservedWindowsDeviceName(string baseName)
+        {
+            var normalized = (baseName ?? string.Empty)
+                .Trim()
+                .TrimEnd('.', ' ')
+                .ToUpperInvariant();
+
+            if (normalized == "CON" ||
+                normalized == "PRN" ||
+                normalized == "AUX" ||
+                normalized == "NUL")
+            {
+                return true;
+            }
+
+            if (normalized.Length == 4)
+            {
+                var prefix = normalized.Substring(0, 3);
+                var suffix = normalized[3];
+                return (prefix == "COM" || prefix == "LPT") && suffix >= '1' && suffix <= '9';
+            }
+
+            return false;
         }
     }
 }
