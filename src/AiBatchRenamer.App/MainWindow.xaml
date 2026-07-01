@@ -73,6 +73,17 @@
                         <CheckBox x:Name="SanitizeCheckBox" Content="自动替换非法字符" IsChecked="True" Margin="0,0,0,12" />
                         <CheckBox x:Name="RecursiveFolderCheckBox" Content="添加文件夹时包含子文件夹" IsChecked="False" Margin="0,0,0,12" />
 
+                        <TextBlock Text="排序方式" FontWeight="SemiBold" />
+                        <ComboBox x:Name="SortComboBox" SelectedIndex="0">
+                            <ComboBoxItem Content="文件名 A-Z" />
+                            <ComboBoxItem Content="文件名 Z-A" />
+                            <ComboBoxItem Content="修改时间 旧-新" />
+                            <ComboBoxItem Content="修改时间 新-旧" />
+                            <ComboBoxItem Content="文件大小 小-大" />
+                            <ComboBoxItem Content="文件大小 大-小" />
+                        </ComboBox>
+                        <Button Content="应用排序" Click="ApplySort_Click" Margin="0,0,0,12" />
+
                         <TextBlock Text="DeepSeek 设置" FontWeight="SemiBold" />
                         <TextBox x:Name="ModelTextBox" Height="28" Text="deepseek-v4-flash" />
                         <PasswordBox x:Name="ApiKeyPasswordBox" Height="28" Margin="0,4,0,10" />

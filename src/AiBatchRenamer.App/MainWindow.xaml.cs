@@ -108,6 +108,25 @@ namespace AiBatchRenamer.App
             MoveSelectedItems(1);
         }
 
+        private void ApplySort_Click(object sender, RoutedEventArgs e)
+        {
+            if (Items.Count == 0)
+            {
+                UpdateStatus("没有可排序的文件。");
+                return;
+            }
+
+            var sorted = SortItems(Items.ToList(), SortComboBox.SelectedIndex);
+            Items.Clear();
+            foreach (var item in sorted)
+            {
+                Items.Add(item);
+            }
+
+            ReindexItems();
+            UpdateStatus("已应用排序。");
+        }
+
         private void ExportPreview_Click(object sender, RoutedEventArgs e)
         {
             if (Items.Count == 0)
@@ -410,6 +429,49 @@ namespace AiBatchRenamer.App
             }
 
             UpdateStatus("已调整文件顺序。");
+        }
+
+        private static IList<RenameItemViewModel> SortItems(IList<RenameItemViewModel> items, int sortMode)
+        {
+            switch (sortMode)
+            {
+                case 1:
+                    return items.OrderByDescending(item => item.OriginalName, StringComparer.CurrentCultureIgnoreCase).ToList();
+                case 2:
+                    return items.OrderBy(item => GetLastWriteTimeSafe(item.Model.OriginalPath)).ToList();
+                case 3:
+                    return items.OrderByDescending(item => GetLastWriteTimeSafe(item.Model.OriginalPath)).ToList();
+                case 4:
+                    return items.OrderBy(item => GetFileSizeSafe(item.Model.OriginalPath)).ToList();
+                case 5:
+                    return items.OrderByDescending(item => GetFileSizeSafe(item.Model.OriginalPath)).ToList();
+                default:
+                    return items.OrderBy(item => item.OriginalName, StringComparer.CurrentCultureIgnoreCase).ToList();
+            }
+        }
+
+        private static DateTime GetLastWriteTimeSafe(string path)
+        {
+            try
+            {
+                return File.Exists(path) ? File.GetLastWriteTime(path) : DateTime.MinValue;
+            }
+            catch
+            {
+                return DateTime.MinValue;
+            }
+        }
+
+        private static long GetFileSizeSafe(string path)
+        {
+            try
+            {
+                return File.Exists(path) ? new FileInfo(path).Length : 0L;
+            }
+            catch
+            {
+                return 0L;
+            }
         }
 
         private static IEnumerable<string> EnumerateFilesSafe(string rootPath, SearchOption searchOption)
