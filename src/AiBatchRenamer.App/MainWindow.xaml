@@ -1,7 +1,7 @@
 <Window x:Class="AiBatchRenamer.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AI批量重命名 for Selena by Dogdog v0.1.13" Height="720" Width="1180" MinHeight="620" MinWidth="980"
+        Title="AI批量重命名 for Selena by Dogdog v0.1.14" Height="720" Width="1180" MinHeight="620" MinWidth="980"
         AllowDrop="True" Drop="Window_Drop" DragOver="Window_DragOver"
         WindowStartupLocation="CenterScreen">
     <Grid Background="{StaticResource Brush.Page}">
@@ -23,7 +23,7 @@
                         <TextBlock Text="AI" Foreground="#FFFFFF" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel>
-                        <TextBlock Text="AI批量重命名 for Selena by Dogdog v0.1.13" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Brush.Text}" />
+                        <TextBlock Text="AI批量重命名 for Selena by Dogdog v0.1.14" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Brush.Text}" />
                         <TextBlock Text="预览确认后直接在原文件上改名；冲突和未变化项会自动跳过。" Style="{StaticResource MutedText}" />
                     </StackPanel>
                 </StackPanel>
@@ -108,19 +108,6 @@
                         <CheckBox x:Name="SanitizeCheckBox" Content="自动替换非法字符" IsChecked="True" />
                         <CheckBox x:Name="RecursiveFolderCheckBox" Content="添加文件夹时包含子文件夹" IsChecked="False" />
 
-                        <TextBlock Text="排序方式" Style="{StaticResource SectionTitle}" />
-                        <ComboBox x:Name="SortComboBox" SelectedIndex="0">
-                            <ComboBoxItem Content="文件名 A-Z" />
-                            <ComboBoxItem Content="文件名 Z-A" />
-                            <ComboBoxItem Content="修改时间 旧-新" />
-                            <ComboBoxItem Content="修改时间 新-旧" />
-                            <ComboBoxItem Content="文件大小 小-大" />
-                            <ComboBoxItem Content="文件大小 大-小" />
-                        </ComboBox>
-                        <Button Content="应用排序" Click="ApplySort_Click" />
-
-                        <Separator Margin="0,6,0,14" />
-
                         <StackPanel x:Name="FindReplacePanel" Visibility="Collapsed">
                             <TextBlock Text="查找替换" Style="{StaticResource SectionTitle}" />
                             <TextBox x:Name="FindTextBox" ToolTip="查找替换模式下使用" />
@@ -136,6 +123,19 @@
                         <Button Content="确认重命名" Click="Execute_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,0,14" />
 
                         <Separator Margin="0,4,0,14" />
+
+                        <TextBlock Text="排序方式" Style="{StaticResource SectionTitle}" />
+                        <ComboBox x:Name="SortComboBox" SelectedIndex="0">
+                            <ComboBoxItem Content="文件名 A-Z" />
+                            <ComboBoxItem Content="文件名 Z-A" />
+                            <ComboBoxItem Content="修改时间 旧-新" />
+                            <ComboBoxItem Content="修改时间 新-旧" />
+                            <ComboBoxItem Content="文件大小 小-大" />
+                            <ComboBoxItem Content="文件大小 大-小" />
+                        </ComboBox>
+                        <Button Content="应用排序" Click="ApplySort_Click" />
+
+                        <Separator Margin="0,6,0,14" />
 
                         <TextBlock Text="操作历史" Style="{StaticResource SectionTitle}" />
                         <ComboBox x:Name="OperationHistoryComboBox" DisplayMemberPath="DisplayText" />
