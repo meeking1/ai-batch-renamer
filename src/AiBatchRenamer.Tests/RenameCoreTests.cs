@@ -109,6 +109,33 @@ namespace AiBatchRenamer.Tests
             TestAssert.Equal(RenameStatus.Unchanged, items[2].Status, "unmatched status");
         }
 
+        public static void NaturalLanguagePreview_AcceptsReplaceSynonyms()
+        {
+            var synonyms = new[]
+            {
+                "JM改成睫毛",
+                "JM改为睫毛",
+                "JM替换成睫毛",
+                "JM替换为睫毛",
+                "JM替换睫毛",
+                "把JM改为睫毛",
+                "将JM替换为睫毛"
+            };
+
+            for (var i = 0; i < synonyms.Length; i++)
+            {
+                var items = CreateItems("E6175JM.jpg", "E6216.jpg");
+
+                new NaturalLanguagePreviewService().ApplyInstruction(items, synonyms[i], true);
+                new RenameValidationService().Validate(items);
+
+                TestAssert.Equal("E6175睫毛.jpg", items[0].ProposedName, "synonym replace proposed name " + synonyms[i]);
+                TestAssert.Equal("E6216.jpg", items[1].ProposedName, "synonym unmatched keeps original " + synonyms[i]);
+                TestAssert.Equal(RenameStatus.Ready, items[0].Status, "synonym replace status " + synonyms[i]);
+                TestAssert.Equal(RenameStatus.Unchanged, items[1].Status, "synonym unmatched status " + synonyms[i]);
+            }
+        }
+
         public static void TemplatePreview_RendersNameFolderAndPaddedIndex()
         {
             var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerTemplateTests-" + Guid.NewGuid().ToString("N"));
