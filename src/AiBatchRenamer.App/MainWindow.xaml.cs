@@ -47,7 +47,7 @@ namespace AiBatchRenamer.App
 
             Items = new ObservableCollection<RenameItemViewModel>();
             DataContext = this;
-            Title = "AI 批量重命名 v" + App.DisplayVersion + " by Dogdog";
+            Title = "AI批量重命名 for Selena by Dogdog v" + App.DisplayVersion;
             LoadSettingsIntoUi();
             RefreshOperationHistory();
         }

@@ -94,6 +94,21 @@ namespace AiBatchRenamer.Tests
             TestAssert.Equal(RenameStatus.Ready, items[0].Status, "replace status");
         }
 
+        public static void NaturalLanguagePreview_AppliesMultipleLocalReplaceRules()
+        {
+            var items = CreateItems("E6108double.jpg", "E6175JM.jpg", "E6216.jpg");
+
+            new NaturalLanguagePreviewService().ApplyInstruction(items, "double改成双色\r\nJM改成睫毛", true);
+            new RenameValidationService().Validate(items);
+
+            TestAssert.Equal("E6108双色.jpg", items[0].ProposedName, "first local replace");
+            TestAssert.Equal("E6175睫毛.jpg", items[1].ProposedName, "second local replace");
+            TestAssert.Equal("E6216.jpg", items[2].ProposedName, "unmatched keeps original");
+            TestAssert.Equal(RenameStatus.Ready, items[0].Status, "first local replace status");
+            TestAssert.Equal(RenameStatus.Ready, items[1].Status, "second local replace status");
+            TestAssert.Equal(RenameStatus.Unchanged, items[2].Status, "unmatched status");
+        }
+
         public static void TemplatePreview_RendersNameFolderAndPaddedIndex()
         {
             var root = Path.Combine(Path.GetTempPath(), "AiBatchRenamerTemplateTests-" + Guid.NewGuid().ToString("N"));

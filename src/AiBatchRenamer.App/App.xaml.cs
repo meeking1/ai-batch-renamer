@@ -85,7 +85,7 @@ namespace AiBatchRenamer.App
             var logPath = LogException(e.Exception, "DispatcherUnhandledException");
             MessageBox.Show(
                 "程序遇到异常，但已阻止直接退出。\r\n\r\n错误信息：" + e.Exception.Message + "\r\n\r\n日志位置：" + logPath,
-                "AI 批量重命名",
+                "AI批量重命名 for Selena by Dogdog",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             e.Handled = true;

@@ -1,4 +1,4 @@
-# AI Batch Renamer
+# AI批量重命名 for Selena by Dogdog
 
 [![Windows Build](https://github.com/meeking1/ai-batch-renamer/actions/workflows/windows-build.yml/badge.svg)](https://github.com/meeking1/ai-batch-renamer/actions/workflows/windows-build.yml)
 

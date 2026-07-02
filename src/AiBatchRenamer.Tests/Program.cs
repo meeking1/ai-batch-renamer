@@ -16,6 +16,7 @@ namespace AiBatchRenamer.Tests
                 RenameCoreTests.Validation_RejectsReservedWindowsDeviceNames,
                 RenameCoreTests.Validation_MarksInvalidCharactersWithoutThrowing,
                 RenameCoreTests.NaturalLanguagePreview_ParsesReplaceInstruction,
+                RenameCoreTests.NaturalLanguagePreview_AppliesMultipleLocalReplaceRules,
                 RenameExecutionTests.ExecuteAndUndo_RenamesFilesAndRestoresOriginalNames,
                 RenameExecutionTests.Execute_SwapsFileNamesAndUndoRestoresOriginals,
                 RenameExecutionTests.Execute_MixedReadyAndUnchanged_RenamesReadyItems,
