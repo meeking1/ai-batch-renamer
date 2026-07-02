@@ -100,6 +100,22 @@ namespace AiBatchRenamer.App
             UpdateStatus(string.Format("已移除 {0} 个文件，当前共 {1} 个。", selectedItems.Count, Items.Count));
         }
 
+        private void RemoveRow_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as FrameworkElement;
+            var item = button == null ? null : button.DataContext as RenameItemViewModel;
+            if (item == null)
+            {
+                UpdateStatus("未找到要删除的行。");
+                return;
+            }
+
+            Items.Remove(item);
+            ReindexItems();
+            UpdateStatus(string.Format("已删除当前行，当前共 {0} 个文件。", Items.Count));
+            e.Handled = true;
+        }
+
         private void MoveSelectedUp_Click(object sender, RoutedEventArgs e)
         {
             MoveSelectedItems(-1);

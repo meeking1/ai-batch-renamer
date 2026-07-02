@@ -1,7 +1,7 @@
 <Window x:Class="AiBatchRenamer.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AI批量重命名 for Selena by Dogdog v0.1.8" Height="720" Width="1180" MinHeight="620" MinWidth="980"
+        Title="AI批量重命名 for Selena by Dogdog v0.1.9" Height="720" Width="1180" MinHeight="620" MinWidth="980"
         AllowDrop="True" Drop="Window_Drop" DragOver="Window_DragOver"
         WindowStartupLocation="CenterScreen">
     <Grid Background="{StaticResource Brush.Page}">
@@ -23,7 +23,7 @@
                         <TextBlock Text="AI" Foreground="#FFFFFF" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel>
-                        <TextBlock Text="AI批量重命名 for Selena by Dogdog v0.1.8" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Brush.Text}" />
+                        <TextBlock Text="AI批量重命名 for Selena by Dogdog v0.1.9" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Brush.Text}" />
                         <TextBlock Text="预览确认后直接在原文件上改名；冲突和未变化项会自动跳过。" Style="{StaticResource MutedText}" />
                     </StackPanel>
                 </StackPanel>
@@ -75,6 +75,17 @@
                             <DataGridTextColumn Header="扩展后名称" Binding="{Binding ProposedName}" Width="2*" IsReadOnly="True" />
                             <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="90" IsReadOnly="True" />
                             <DataGridTextColumn Header="说明" Binding="{Binding Message}" Width="210" IsReadOnly="True" />
+                            <DataGridTemplateColumn Header="" Width="52" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="×"
+                                                Style="{StaticResource RowDeleteButton}"
+                                                Click="RemoveRow_Click"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
