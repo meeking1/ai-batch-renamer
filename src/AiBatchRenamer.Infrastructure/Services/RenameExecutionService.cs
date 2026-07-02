@@ -209,7 +209,7 @@ namespace AiBatchRenamer.Infrastructure.Services
             }
 
             WriteDiagnostic("MoveFileExW call: " + Path.GetFileName(sourcePath) + " -> " + Path.GetFileName(destinationPath));
-            if (!MoveFileEx(sourcePath, destinationPath, MoveFileCopyAllowed | MoveFileWriteThrough))
+            if (!MoveFileEx(sourcePath, destinationPath, MoveFileWriteThrough))
             {
                 var error = Marshal.GetLastWin32Error();
                 WriteDiagnostic("MoveFileExW failed. Error=" + error);
@@ -253,8 +253,6 @@ namespace AiBatchRenamer.Infrastructure.Services
 
             public bool IsStaged { get; set; }
         }
-
-        private const int MoveFileCopyAllowed = 0x2;
 
         private const int MoveFileWriteThrough = 0x8;
 
