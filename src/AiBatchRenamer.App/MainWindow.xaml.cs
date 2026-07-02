@@ -49,6 +49,7 @@ namespace AiBatchRenamer.App
             DataContext = this;
             Title = "AI批量重命名 for Selena by Dogdog v" + App.DisplayVersion;
             LoadSettingsIntoUi();
+            UpdateModePanels();
             RefreshOperationHistory();
         }
 
@@ -143,6 +144,23 @@ namespace AiBatchRenamer.App
 
             ReindexItems();
             UpdateStatus("已应用排序。");
+        }
+
+        private void ModeComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            UpdateModePanels();
+        }
+
+        private void UpdateModePanels()
+        {
+            if (FindReplacePanel == null || ModeComboBox == null)
+            {
+                return;
+            }
+
+            FindReplacePanel.Visibility = ModeComboBox.SelectedIndex == 2
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         private void RevealSelected_Click(object sender, RoutedEventArgs e)

@@ -1,7 +1,7 @@
 <Window x:Class="AiBatchRenamer.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AI批量重命名 for Selena by Dogdog v0.1.11" Height="720" Width="1180" MinHeight="620" MinWidth="980"
+        Title="AI批量重命名 for Selena by Dogdog v0.1.12" Height="720" Width="1180" MinHeight="620" MinWidth="980"
         AllowDrop="True" Drop="Window_Drop" DragOver="Window_DragOver"
         WindowStartupLocation="CenterScreen">
     <Grid Background="{StaticResource Brush.Page}">
@@ -23,7 +23,7 @@
                         <TextBlock Text="AI" Foreground="#FFFFFF" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel>
-                        <TextBlock Text="AI批量重命名 for Selena by Dogdog v0.1.11" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Brush.Text}" />
+                        <TextBlock Text="AI批量重命名 for Selena by Dogdog v0.1.12" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Brush.Text}" />
                         <TextBlock Text="预览确认后直接在原文件上改名；冲突和未变化项会自动跳过。" Style="{StaticResource MutedText}" />
                     </StackPanel>
                 </StackPanel>
@@ -98,7 +98,7 @@
                         <TextBlock Text="重命名设置" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource Brush.Text}" Margin="0,0,0,12" />
 
                         <TextBlock Text="重命名模式" Style="{StaticResource SectionTitle}" />
-                        <ComboBox x:Name="ModeComboBox" SelectedIndex="0">
+                        <ComboBox x:Name="ModeComboBox" SelectedIndex="0" SelectionChanged="ModeComboBox_SelectionChanged">
                             <ComboBoxItem Content="自然语言规则" />
                             <ComboBoxItem Content="多名称逐行替换" />
                             <ComboBoxItem Content="查找替换" />
@@ -121,9 +121,11 @@
 
                         <Separator Margin="0,6,0,14" />
 
-                        <TextBlock Text="查找替换" Style="{StaticResource SectionTitle}" />
-                        <TextBox x:Name="FindTextBox" ToolTip="查找替换模式下使用" />
-                        <TextBox x:Name="ReplaceTextBox" ToolTip="查找替换模式下使用" />
+                        <StackPanel x:Name="FindReplacePanel" Visibility="Collapsed">
+                            <TextBlock Text="查找替换" Style="{StaticResource SectionTitle}" />
+                            <TextBox x:Name="FindTextBox" ToolTip="查找替换模式下使用" />
+                            <TextBox x:Name="ReplaceTextBox" ToolTip="查找替换模式下使用" />
+                        </StackPanel>
 
                         <TextBlock Text="命名要求 / 名称列表" Style="{StaticResource SectionTitle}" />
                         <TextBox x:Name="InstructionTextBox" AcceptsReturn="True" TextWrapping="Wrap"
