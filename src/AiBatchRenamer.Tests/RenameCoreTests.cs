@@ -117,6 +117,7 @@ namespace AiBatchRenamer.Tests
                 "JM改为睫毛",
                 "JM替换成睫毛",
                 "JM替换为睫毛",
+                "JM变成睫毛",
                 "JM替换睫毛",
                 "把JM改为睫毛",
                 "将JM替换为睫毛"

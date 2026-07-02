@@ -87,7 +87,7 @@ namespace AiBatchRenamer.Core.Services
         {
             var patterns = new[]
             {
-                "(?:把|将)?(.+?)(?:替换成|替换为|改成|改为|替换)(.+)",
+                "(?:把|将)?(.+?)(?:替换成|替换为|改成|改为|变成|替换)(.+)",
                 "replace\\s+(.+?)\\s+with\\s+(.+)"
             };
 
