@@ -7,6 +7,13 @@ namespace AiBatchRenamer.Core.Services
 {
     public class NaturalLanguagePreviewService
     {
+        private const string ChineseCharacterPattern = @"[\u3400-\u9FFF]";
+        private static readonly object RandomSync = new object();
+        private static readonly Random Random = new Random();
+        private static readonly char[] DigitCharacters = "0123456789".ToCharArray();
+        private static readonly char[] LetterCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
+        private static readonly char[] AlphaNumericCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
+
         public IList<RenameItem> ApplyInstruction(IList<RenameItem> items, string instruction, bool sanitizeNames)
         {
             if (string.IsNullOrWhiteSpace(instruction))
@@ -14,24 +21,8 @@ namespace AiBatchRenamer.Core.Services
                 return items;
             }
 
-            var replacements = ParseReplaceInstructions(instruction);
-            if (replacements.Count > 0)
+            if (TryApplyLocalInstruction(items, instruction, sanitizeNames))
             {
-                foreach (var item in items)
-                {
-                    var proposedBaseName = item.OriginalBaseName;
-                    foreach (var replace in replacements)
-                    {
-                        proposedBaseName = proposedBaseName.Replace(replace.OldText, replace.NewText);
-                    }
-
-                    item.ProposedBaseName = sanitizeNames
-                        ? FileNameSanitizer.SanitizeBaseName(proposedBaseName)
-                        : proposedBaseName;
-                    item.Status = RenameStatus.Pending;
-                    item.Message = string.Empty;
-                }
-
                 return items;
             }
 
@@ -56,6 +47,79 @@ namespace AiBatchRenamer.Core.Services
             }
 
             return items;
+        }
+
+        public bool TryApplyLocalInstruction(IList<RenameItem> items, string instruction, bool sanitizeNames)
+        {
+            if (string.IsNullOrWhiteSpace(instruction))
+            {
+                return false;
+            }
+
+            var replacements = ParseReplaceInstructions(instruction);
+            if (replacements.Count > 0)
+            {
+                foreach (var item in items)
+                {
+                    var proposedBaseName = item.OriginalBaseName;
+                    foreach (var replace in replacements)
+                    {
+                        proposedBaseName = proposedBaseName.Replace(replace.OldText, replace.NewText);
+                    }
+
+                    item.ProposedBaseName = sanitizeNames
+                        ? FileNameSanitizer.SanitizeBaseName(proposedBaseName)
+                        : proposedBaseName;
+                    item.Status = RenameStatus.Pending;
+                    item.Message = string.Empty;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void ApplyRandomChineseReplacement(IList<RenameItem> items, RandomChineseReplacementMode mode, bool sanitizeNames)
+        {
+            var pool = GetRandomReplacementCharacters(mode);
+
+            foreach (var item in items)
+            {
+                var proposedBaseName = Regex.Replace(
+                    item.OriginalBaseName ?? string.Empty,
+                    ChineseCharacterPattern,
+                    match => NextRandomCharacter(pool).ToString());
+
+                item.ProposedBaseName = sanitizeNames
+                    ? FileNameSanitizer.SanitizeBaseName(proposedBaseName)
+                    : proposedBaseName;
+                item.Status = RenameStatus.Pending;
+                item.Message = string.Empty;
+            }
+        }
+
+        private static char[] GetRandomReplacementCharacters(RandomChineseReplacementMode mode)
+        {
+            if (mode == RandomChineseReplacementMode.Letters)
+            {
+                return LetterCharacters;
+            }
+
+            if (mode == RandomChineseReplacementMode.AlphaNumeric)
+            {
+                return AlphaNumericCharacters;
+            }
+
+            return DigitCharacters;
+        }
+
+        private static char NextRandomCharacter(char[] characters)
+        {
+            lock (RandomSync)
+            {
+                return characters[Random.Next(characters.Length)];
+            }
         }
 
         private static IList<ReplaceInstruction> ParseReplaceInstructions(string instruction)
@@ -145,5 +209,12 @@ namespace AiBatchRenamer.Core.Services
 
             public string NewText { get; set; }
         }
+    }
+
+    public enum RandomChineseReplacementMode
+    {
+        Digits,
+        Letters,
+        AlphaNumeric
     }
 }

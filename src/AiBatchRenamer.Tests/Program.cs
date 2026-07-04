@@ -18,6 +18,8 @@ namespace AiBatchRenamer.Tests
                 RenameCoreTests.NaturalLanguagePreview_ParsesReplaceInstruction,
                 RenameCoreTests.NaturalLanguagePreview_AppliesMultipleLocalReplaceRules,
                 RenameCoreTests.NaturalLanguagePreview_AcceptsReplaceSynonyms,
+                RenameCoreTests.NaturalLanguagePreview_ReplacesChineseCharactersWithRandomDigits,
+                RenameCoreTests.NaturalLanguagePreview_ReplacesChineseCharactersWithRandomLetters,
                 RenameExecutionTests.ExecuteAndUndo_RenamesFilesAndRestoresOriginalNames,
                 RenameExecutionTests.Execute_SwapsFileNamesAndUndoRestoresOriginals,
                 RenameExecutionTests.Execute_MixedReadyAndUnchanged_RenamesReadyItems,

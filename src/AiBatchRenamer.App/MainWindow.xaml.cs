@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using AiBatchRenamer.App.ViewModels;
 using AiBatchRenamer.Core.Models;
 using AiBatchRenamer.Core.Services;
@@ -185,6 +186,42 @@ namespace AiBatchRenamer.App
             Process.Start("explorer.exe", "/select,\"" + path + "\"");
         }
 
+        private void CopySelectedBaseNames_Click(object sender, RoutedEventArgs e)
+        {
+            CopySelectedBaseNamesToClipboard();
+        }
+
+        private void FilesGrid_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.OriginalSource is System.Windows.Controls.TextBox)
+            {
+                return;
+            }
+
+            if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                CopySelectedBaseNamesToClipboard();
+                e.Handled = true;
+            }
+        }
+
+        private void CopySelectedBaseNamesToClipboard()
+        {
+            var selectedItems = FilesGrid.SelectedItems
+                .OfType<RenameItemViewModel>()
+                .OrderBy(item => item.Index)
+                .ToList();
+
+            if (selectedItems.Count == 0)
+            {
+                UpdateStatus("请先选择要复制文件名的行。");
+                return;
+            }
+
+            Clipboard.SetText(string.Join(Environment.NewLine, selectedItems.Select(item => item.Model.OriginalBaseName)));
+            UpdateStatus(string.Format("已复制 {0} 个原文件名，不包含扩展名。", selectedItems.Count));
+        }
+
         private void CopyPreview_Click(object sender, RoutedEventArgs e)
         {
             if (Items.Count == 0)
@@ -301,7 +338,11 @@ namespace AiBatchRenamer.App
             var models = Items.Select(viewModel => viewModel.Model).ToList();
             var sanitize = SanitizeCheckBox.IsChecked == true;
 
-            if (ModeComboBox.SelectedIndex == 1)
+            if (RandomChineseReplaceCheckBox.IsChecked == true)
+            {
+                ApplyRandomChineseReplacementPreview(models, sanitize);
+            }
+            else if (ModeComboBox.SelectedIndex == 1)
             {
                 ApplyMultiNamePreview(models, sanitize);
             }
@@ -321,6 +362,22 @@ namespace AiBatchRenamer.App
             validationService.Validate(models);
             RefreshItems();
             UpdatePreviewStatus(models);
+        }
+
+        private void ApplyRandomChineseReplacementPreview(IList<RenameItem> models, bool sanitize)
+        {
+            var mode = RandomChineseReplacementMode.Digits;
+            if (RandomChineseReplaceModeComboBox.SelectedIndex == 1)
+            {
+                mode = RandomChineseReplacementMode.Letters;
+            }
+            else if (RandomChineseReplaceModeComboBox.SelectedIndex == 2)
+            {
+                mode = RandomChineseReplacementMode.AlphaNumeric;
+            }
+
+            naturalLanguagePreviewService.ApplyRandomChineseReplacement(models, mode, sanitize);
+            UpdateStatus("已生成汉字随机替换预览。确认后会直接在原文件上改名。");
         }
 
         private void SaveSettings_Click(object sender, RoutedEventArgs e)
@@ -722,6 +779,12 @@ namespace AiBatchRenamer.App
 
         private async Task ApplyNaturalLanguagePreviewAsync(IList<RenameItem> models, bool sanitize)
         {
+            if (naturalLanguagePreviewService.TryApplyLocalInstruction(models, InstructionTextBox.Text, sanitize))
+            {
+                UpdateStatus("已使用本地自然语言规则生成预览。");
+                return;
+            }
+
             if (!aiNamingService.IsConfigured)
             {
                 naturalLanguagePreviewService.ApplyInstruction(models, InstructionTextBox.Text, sanitize);
@@ -771,14 +834,33 @@ namespace AiBatchRenamer.App
             }
             catch (Exception ex)
             {
+                var itemMessage = BuildDeepSeekItemErrorMessage(ex);
                 foreach (var item in models)
                 {
                     item.Status = RenameStatus.Invalid;
-                    item.Message = "DeepSeek 生成失败";
+                    item.Message = itemMessage;
                 }
 
+                App.LogException(ex, "DeepSeek preview generation");
                 UpdateStatus(ex.Message);
             }
+        }
+
+        private static string BuildDeepSeekItemErrorMessage(Exception ex)
+        {
+            var message = ex == null ? string.Empty : ex.Message;
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return "DeepSeek 生成失败";
+            }
+
+            message = message.Replace("\r", " ").Replace("\n", " ").Trim();
+            if (message.Length > 80)
+            {
+                message = message.Substring(0, 80) + "...";
+            }
+
+            return "DeepSeek 失败：" + message;
         }
 
         private void LoadSettingsIntoUi()

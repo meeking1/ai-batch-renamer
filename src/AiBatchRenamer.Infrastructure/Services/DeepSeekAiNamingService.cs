@@ -16,6 +16,9 @@ namespace AiBatchRenamer.Infrastructure.Services
     {
         private const string Endpoint = "https://api.deepseek.com/chat/completions";
         private const int MaxAttempts = 3;
+        private const int MinimumMaxTokens = 4096;
+        private const int MaximumMaxTokens = 64000;
+        private const int EstimatedTokensPerFile = 80;
         private readonly AppSettingsService settingsService;
 
         public DeepSeekAiNamingService(AppSettingsService settingsService)
@@ -67,7 +70,7 @@ namespace AiBatchRenamer.Infrastructure.Services
                 Model = string.IsNullOrWhiteSpace(model) ? "deepseek-v4-flash" : model.Trim(),
                 Stream = false,
                 Temperature = 0.2,
-                MaxTokens = 4096,
+                MaxTokens = CalculateMaxTokens(request.Files == null ? 0 : request.Files.Count),
                 Thinking = new ThinkingOptions { Type = "disabled" },
                 ResponseFormat = new ResponseFormat { Type = "json_object" },
                 Messages = new List<ChatMessage>
@@ -84,6 +87,12 @@ namespace AiBatchRenamer.Infrastructure.Services
                     }
                 }
             };
+        }
+
+        private static int CalculateMaxTokens(int fileCount)
+        {
+            var estimated = Math.Max(MinimumMaxTokens, fileCount * EstimatedTokensPerFile);
+            return Math.Min(MaximumMaxTokens, estimated);
         }
 
         private static string BuildUserPrompt(AiNamingRequest request)

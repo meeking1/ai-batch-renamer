@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using AiBatchRenamer.Core.Models;
 using AiBatchRenamer.Core.Services;
 
@@ -135,6 +136,32 @@ namespace AiBatchRenamer.Tests
                 TestAssert.Equal(RenameStatus.Ready, items[0].Status, "synonym replace status " + synonyms[i]);
                 TestAssert.Equal(RenameStatus.Unchanged, items[1].Status, "synonym unmatched status " + synonyms[i]);
             }
+        }
+
+        public static void NaturalLanguagePreview_ReplacesChineseCharactersWithRandomDigits()
+        {
+            var items = CreateItems("新潮8.14.jpg", "E6108双色.png", "ABC123.jpg");
+
+            new NaturalLanguagePreviewService().ApplyRandomChineseReplacement(items, RandomChineseReplacementMode.Digits, true);
+            new RenameValidationService().Validate(items);
+
+            TestAssert.True(Regex.IsMatch(items[0].ProposedName, @"^\d\d8\.14\.jpg$"), "first Chinese characters become digits");
+            TestAssert.True(Regex.IsMatch(items[1].ProposedName, @"^E6108\d\d\.png$"), "second Chinese characters become digits");
+            TestAssert.Equal("ABC123.jpg", items[2].ProposedName, "file without Chinese stays unchanged");
+            TestAssert.Equal(RenameStatus.Ready, items[0].Status, "first random digit status");
+            TestAssert.Equal(RenameStatus.Ready, items[1].Status, "second random digit status");
+            TestAssert.Equal(RenameStatus.Unchanged, items[2].Status, "unchanged random digit status");
+        }
+
+        public static void NaturalLanguagePreview_ReplacesChineseCharactersWithRandomLetters()
+        {
+            var items = CreateItems("新潮8.14.jpg");
+
+            new NaturalLanguagePreviewService().ApplyRandomChineseReplacement(items, RandomChineseReplacementMode.Letters, true);
+            new RenameValidationService().Validate(items);
+
+            TestAssert.True(Regex.IsMatch(items[0].ProposedName, @"^[A-Za-z][A-Za-z]8\.14\.jpg$"), "Chinese characters become letters");
+            TestAssert.Equal(RenameStatus.Ready, items[0].Status, "random letter status");
         }
 
         public static void TemplatePreview_RendersNameFolderAndPaddedIndex()
