@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -234,8 +236,10 @@ namespace AiBatchRenamer.App
                 return;
             }
 
-            Clipboard.SetText(string.Join(Environment.NewLine, selectedItems.Select(item => item.Model.OriginalBaseName)));
-            UpdateStatus(string.Format("已复制 {0} 个原文件名，不包含扩展名。", selectedItems.Count));
+            if (TrySetClipboardText(string.Join(Environment.NewLine, selectedItems.Select(item => item.Model.OriginalBaseName))))
+            {
+                UpdateStatus(string.Format("已复制 {0} 个原文件名，不包含扩展名。", selectedItems.Count));
+            }
         }
 
         private void CopyPreview_Click(object sender, RoutedEventArgs e)
@@ -261,8 +265,37 @@ namespace AiBatchRenamer.App
                     .AppendLine();
             }
 
-            Clipboard.SetText(builder.ToString());
-            UpdateStatus("已复制预览到剪贴板。");
+            if (TrySetClipboardText(builder.ToString()))
+            {
+                UpdateStatus("已复制预览到剪贴板。");
+            }
+        }
+
+        private bool TrySetClipboardText(string text)
+        {
+            const int maxAttempts = 8;
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    Clipboard.SetText(text ?? string.Empty);
+                    return true;
+                }
+                catch (COMException ex)
+                {
+                    App.LogException(ex, "Clipboard.SetText attempt " + attempt);
+                    if (attempt == maxAttempts)
+                    {
+                        UpdateStatus("剪贴板正被其他程序占用，请稍后再复制。");
+                        return false;
+                    }
+
+                    Thread.Sleep(60 * attempt);
+                }
+            }
+
+            UpdateStatus("剪贴板写入失败，请稍后再复制。");
+            return false;
         }
 
         private void ExportPreview_Click(object sender, RoutedEventArgs e)

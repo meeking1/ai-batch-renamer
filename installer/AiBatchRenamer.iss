@@ -1,5 +1,5 @@
 #define MyAppName "AI批量重命名 for Selena by Dogdog"
-#define MyAppVersion "0.1.16"
+#define MyAppVersion "0.1.17"
 #define MyAppPublisher "AI批量重命名 for Selena by Dogdog"
 #define MyAppExeName "AiBatchRenamer.exe"
 
