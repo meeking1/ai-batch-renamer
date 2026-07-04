@@ -48,6 +48,10 @@ namespace AiBatchRenamer.App
 
             Items = new ObservableCollection<RenameItemViewModel>();
             DataContext = this;
+            FilesGrid.CommandBindings.Add(new CommandBinding(
+                ApplicationCommands.Copy,
+                FilesGridCopy_Executed,
+                FilesGridCopy_CanExecute));
             Title = "AI批量重命名 for Selena by Dogdog v" + App.DisplayVersion;
             LoadSettingsIntoUi();
             UpdateModePanels();
@@ -203,6 +207,18 @@ namespace AiBatchRenamer.App
                 CopySelectedBaseNamesToClipboard();
                 e.Handled = true;
             }
+        }
+
+        private void FilesGridCopy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = FilesGrid != null && FilesGrid.SelectedItems.Count > 0;
+            e.Handled = true;
+        }
+
+        private void FilesGridCopy_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            CopySelectedBaseNamesToClipboard();
+            e.Handled = true;
         }
 
         private void CopySelectedBaseNamesToClipboard()
