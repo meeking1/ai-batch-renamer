@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -192,12 +191,12 @@ namespace AiBatchRenamer.App
             Process.Start("explorer.exe", "/select,\"" + path + "\"");
         }
 
-        private void CopySelectedBaseNames_Click(object sender, RoutedEventArgs e)
+        private async void CopySelectedBaseNames_Click(object sender, RoutedEventArgs e)
         {
-            CopySelectedBaseNamesToClipboard();
+            await CopySelectedBaseNamesToClipboardAsync();
         }
 
-        private void FilesGrid_KeyDown(object sender, KeyEventArgs e)
+        private async void FilesGrid_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.OriginalSource is System.Windows.Controls.TextBox)
             {
@@ -206,8 +205,8 @@ namespace AiBatchRenamer.App
 
             if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
             {
-                CopySelectedBaseNamesToClipboard();
                 e.Handled = true;
+                await CopySelectedBaseNamesToClipboardAsync();
             }
         }
 
@@ -217,13 +216,13 @@ namespace AiBatchRenamer.App
             e.Handled = true;
         }
 
-        private void FilesGridCopy_Executed(object sender, ExecutedRoutedEventArgs e)
+        private async void FilesGridCopy_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            CopySelectedBaseNamesToClipboard();
             e.Handled = true;
+            await CopySelectedBaseNamesToClipboardAsync();
         }
 
-        private void CopySelectedBaseNamesToClipboard()
+        private async Task CopySelectedBaseNamesToClipboardAsync()
         {
             var selectedItems = FilesGrid.SelectedItems
                 .OfType<RenameItemViewModel>()
@@ -236,13 +235,13 @@ namespace AiBatchRenamer.App
                 return;
             }
 
-            if (TrySetClipboardText(string.Join(Environment.NewLine, selectedItems.Select(item => item.Model.OriginalBaseName))))
+            if (await TrySetClipboardTextAsync(string.Join(Environment.NewLine, selectedItems.Select(item => item.Model.OriginalBaseName))))
             {
                 UpdateStatus(string.Format("已复制 {0} 个原文件名，不包含扩展名。", selectedItems.Count));
             }
         }
 
-        private void CopyPreview_Click(object sender, RoutedEventArgs e)
+        private async void CopyPreview_Click(object sender, RoutedEventArgs e)
         {
             if (Items.Count == 0)
             {
@@ -265,32 +264,34 @@ namespace AiBatchRenamer.App
                     .AppendLine();
             }
 
-            if (TrySetClipboardText(builder.ToString()))
+            if (await TrySetClipboardTextAsync(builder.ToString()))
             {
                 UpdateStatus("已复制预览到剪贴板。");
             }
         }
 
-        private bool TrySetClipboardText(string text)
+        private async Task<bool> TrySetClipboardTextAsync(string text)
         {
-            const int maxAttempts = 8;
+            const int maxAttempts = 4;
             for (var attempt = 1; attempt <= maxAttempts; attempt++)
             {
                 try
                 {
-                    Clipboard.SetText(text ?? string.Empty);
+                    var dataObject = new DataObject();
+                    dataObject.SetText(text ?? string.Empty);
+                    Clipboard.SetDataObject(dataObject, false);
                     return true;
                 }
                 catch (COMException ex)
                 {
-                    App.LogException(ex, "Clipboard.SetText attempt " + attempt);
+                    App.LogException(ex, "Clipboard.SetDataObject attempt " + attempt);
                     if (attempt == maxAttempts)
                     {
-                        UpdateStatus("剪贴板正被其他程序占用，请稍后再复制。");
+                        UpdateStatus("剪贴板可能已复制，但系统返回占用；如未成功请稍后再试。");
                         return false;
                     }
 
-                    Thread.Sleep(60 * attempt);
+                    await Task.Delay(80 * attempt);
                 }
             }
 
